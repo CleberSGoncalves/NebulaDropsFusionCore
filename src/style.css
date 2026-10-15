@@ -1,0 +1,424 @@
+/**
+ * @fileoverview Stylesheet for Nebula Drops: Fusion Core
+ * Enforces full-viewport zero-scroll container, responsive HUD layout,
+ * touch hit areas >= 48x48px, and glassmorphic sci-fi containment panels.
+ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+html,
+body,
+#app {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #02050d;
+  font-family: 'Montserrat', sans-serif;
+  color: #f8fafc;
+  touch-action: none;
+}
+
+#game-stage {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, #09152e 0%, #02050d 100%);
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ── HUD Overlay ─────────────────────────────────────────────────────────── */
+#hud-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 18px;
+  z-index: 20;
+}
+
+.hud-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  pointer-events: none;
+}
+
+.hud-cluster {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.hud-pill {
+  min-height: 40px;
+  padding: 6px 14px;
+  background: rgba(8, 17, 36, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.32);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #e2e8f0;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+.hud-pill-cyan {
+  border-color: #00f5ff;
+  color: #00f5ff;
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.45);
+}
+
+.hud-orb-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1.5px solid #ffffff;
+}
+
+.hud-icon-btn {
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0 12px;
+  background: rgba(12, 23, 46, 0.9);
+  border: 1.5px solid rgba(0, 245, 255, 0.45);
+  border-radius: 10px;
+  color: #00f5ff;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform 0.12s, background 0.15s;
+}
+
+.hud-icon-btn:hover {
+  background: rgba(0, 245, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.hud-icon-btn:active {
+  transform: scale(0.95);
+}
+
+/* ── Danger & Shield Banner ──────────────────────────────────────────────── */
+.hud-danger-banner {
+  align-self: center;
+  padding: 8px 22px;
+  background: rgba(220, 38, 38, 0.88);
+  border: 2px solid #fca5a5;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  box-shadow: 0 0 24px rgba(239, 68, 68, 0.75);
+  animation: pulseDanger 0.6s infinite alternate;
+}
+
+.hud-shield-banner {
+  background: rgba(2, 132, 199, 0.88);
+  border-color: #00f5ff;
+  box-shadow: 0 0 24px rgba(0, 245, 255, 0.75);
+}
+
+.hidden {
+  display: none !important;
+}
+
+@keyframes pulseDanger {
+  from {
+    transform: scale(0.97);
+    opacity: 0.85;
+  }
+  to {
+    transform: scale(1.03);
+    opacity: 1;
+  }
+}
+
+/* ── Bottom Tactical Bar ─────────────────────────────────────────────────── */
+.hud-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  pointer-events: auto;
+  padding-bottom: 2px;
+}
+
+.hud-action-btn {
+  min-height: 48px;
+  padding: 10px 18px;
+  background: rgba(12, 23, 48, 0.9);
+  border: 1.5px solid rgba(56, 189, 248, 0.5);
+  border-radius: 10px;
+  color: #38bdf8;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.hud-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.hud-btn-primary {
+  background: linear-gradient(135deg, #0284c7, #00f5ff);
+  border-color: #e0f2fe;
+  color: #020617;
+  font-weight: 900;
+}
+
+.hud-btn-gold {
+  border-color: #facc15;
+  color: #facc15;
+}
+
+/* ── Modals & Level Select Grid (Rule 10) ────────────────────────────────── */
+.hud-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 18, 0.82);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  pointer-events: auto;
+  padding: 16px;
+}
+
+.hud-modal-card {
+  width: 100%;
+  max-width: 440px;
+  background: linear-gradient(180deg, #0b1730 0%, #050b18 100%);
+  border: 1.5px solid rgba(0, 245, 255, 0.4);
+  border-radius: 18px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(0, 245, 255, 0.15);
+}
+
+.hud-modal-wide {
+  max-width: 740px;
+  max-height: 88vh;
+}
+
+.hud-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hud-modal-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: #00f5ff;
+  letter-spacing: 1px;
+}
+
+.hud-title-gold {
+  color: #facc15;
+  text-shadow: 0 0 16px rgba(250, 204, 21, 0.45);
+}
+
+.hud-title-danger {
+  color: #ef4444;
+  text-shadow: 0 0 16px rgba(239, 68, 68, 0.45);
+}
+
+.hud-modal-sub {
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.hud-victory-stars {
+  font-size: 34px;
+  color: #facc15;
+  letter-spacing: 6px;
+  text-shadow: 0 0 18px rgba(250, 204, 21, 0.6);
+}
+
+.hud-shard-reward {
+  font-size: 16px;
+  font-weight: 800;
+  color: #38bdf8;
+  padding: 8px;
+  background: rgba(56, 189, 248, 0.1);
+  border-radius: 10px;
+}
+
+.hud-ad-status {
+  font-size: 12px;
+  color: #f87171;
+  min-height: 16px;
+}
+
+.hud-modal-btn {
+  min-height: 48px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.12s;
+}
+
+.hud-modal-btn:active {
+  transform: scale(0.97);
+}
+
+.hud-modal-btn-primary {
+  background: linear-gradient(135deg, #0284c7, #00f5ff);
+  color: #020617;
+  font-weight: 900;
+}
+
+.hud-modal-btn-secondary {
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #e2e8f0;
+}
+
+.hud-modal-btn-gold {
+  background: linear-gradient(135deg, #ca8a04, #facc15);
+  color: #020617;
+  font-weight: 900;
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.35);
+}
+
+/* ── Rule 10: 3-Column Visual Cards Grid ─────────────────────────────────── */
+.hud-level-scroll {
+  overflow-y: auto;
+  max-height: 60vh;
+  padding-right: 6px;
+}
+
+.hud-level-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.hud-sector-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(56, 189, 248, 0.35);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-sector-card.locked {
+  opacity: 0.45;
+  filter: grayscale(0.65);
+}
+
+.hud-sector-thumb {
+  width: 100%;
+  height: 76px;
+  border-radius: 10px;
+  border: 1.5px solid #00f5ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hud-sector-orb-preview {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 14px;
+  color: #020617;
+}
+
+.hud-sector-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.hud-sector-meta {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.hud-sector-stars {
+  font-size: 18px;
+  color: #facc15;
+  letter-spacing: 3px;
+}
+
+.hud-sector-btn {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  background: #1e293b;
+  color: #94a3b8;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.hud-sector-btn.unlocked {
+  background: linear-gradient(135deg, #0284c7, #00f5ff);
+  border: none;
+  color: #020617;
+}
+
+@media (max-width: 680px) {
+  .hud-level-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .hud-pill {
+    padding: 4px 10px;
+    font-size: 11px;
+    min-height: 36px;
+  }
+}
