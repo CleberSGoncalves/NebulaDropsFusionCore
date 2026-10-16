@@ -28,17 +28,20 @@ export const TRANSLATIONS = {
     best: 'BEST',
     nextOrb: 'NEXT',
     time: 'TIME',
-    targetTier: 'TARGET CORE',
-    dangerWarning: 'WARNING: CONTAINMENT OVERFLOW!',
+    targetTier: 'GOAL CORE',
+    dangerWarning: '⚠️ OVERFLOW WARNING!',
+    meltdownIn: 'MELTDOWN IN',
     shieldActive: 'CONTAINMENT SHIELD ACTIVE',
     combo: 'FUSION COMBO',
-    dropHintDesktop: 'MOVE: Mouse / A-D / Arrows  •  DROP: Click / Space  •  TOOLS: [F] Pulse  [V] Vent  [C] Catalyst',
-    dropHintMobile: 'DRAG to aim  •  RELEASE or TAP DROP to launch plasma orb',
+    dropHintDesktop: 'MOUSE / A-D: Aim  •  CLICK / SPACE: Drop  •  [F] Pulse  [V] Vent  [C] Catalyst',
+    dropHintMobile: 'DRAG to aim  •  TAP to drop  •  Merge matching orbs!',
+    gameLogicTip: '🎯 HOW TO PLAY: Drop orbs! Collide 2 matching cores (H+ + H+ = He) to fuse bigger cores and score points!',
+    btnEvoGuide: 'CHAIN [?]',
 
     // Tactical Abilities
-    btnDrop: 'DROP ORB',
-    btnPulse: 'GRAV PULSE [F]',
-    btnVent: 'VENT SMALL [V]',
+    btnDrop: 'DROP',
+    btnPulse: 'PULSE [F]',
+    btnVent: 'VENT [V]',
     btnCatalyst: 'CATALYST [C]',
     ready: 'READY',
     usesLeft: 'LEFT',
@@ -57,7 +60,7 @@ export const TRANSLATIONS = {
     selectSectorSub: 'Synthesize target plasma cores and earn 3 Stars to unlock deeper containment chambers.',
     launchSector: 'LAUNCH',
     lockedSector: 'LOCKED',
-    goalScore: 'Quota',
+    goalScore: 'Score Quota',
     goalTier: 'Synthesize',
 
     // Victory Modal
@@ -70,7 +73,7 @@ export const TRANSLATIONS = {
 
     // Game Over Modal
     meltdownTitle: 'REACTOR MELTDOWN!',
-    meltdownOverflow: 'Liquid plasma overflowed the magnetic containment barrier!',
+    meltdownOverflow: 'Liquid plasma overflowed the magnetic containment barrier for too long!',
     meltdownTimeout: 'Critical time limit expired before core stabilization!',
     reviveBtn: '[VIDEO] EMERGENCY SHIELD (+30s & CLEAR TOP)',
     retryBtn: 'RETRY SECTOR',
@@ -91,8 +94,10 @@ export const TRANSLATIONS = {
       'Nebula Fusion Core'
     ],
 
-    // Evolution Wheel
-    evolutionChain: 'FUSION EVOLUTION CHAIN'
+    // Evolution Modal
+    evolutionChain: 'FUSION EVOLUTION CHAIN',
+    evolutionModalTitle: 'CORE EVOLUTION CHAIN',
+    evolutionModalSub: 'Merge two identical cores to synthesize the next tier:'
   },
 
   pt: {
@@ -119,15 +124,18 @@ export const TRANSLATIONS = {
     nextOrb: 'PRÓXIMO',
     time: 'TEMPO',
     targetTier: 'NÚCLEO ALVO',
-    dangerWarning: 'PERIGO: TRANSBORDAMENTO CRÍTICO!',
+    dangerWarning: '⚠️ PERIGO DE TRANSBORDO!',
+    meltdownIn: 'COLAPSO EM',
     shieldActive: 'ESCUDO DE CONTENÇÃO ATIVO',
     combo: 'COMBO DE FUSÃO',
-    dropHintDesktop: 'MOVER: Mouse / A-D / Setas  •  SOLTAR: Clique / Espaço  •  HABILIDADES: [F] Pulso  [V] Purgar  [C] Catalisador',
-    dropHintMobile: 'ARRASTE para mirar  •  SOLTE ou TOQUE EM SOLTAR para lançar o orbe',
+    dropHintDesktop: 'MOUSE / A-D: Mirar  •  CLIQUE / ESPAÇO: Soltar  •  [F] Pulso  [V] Purgar  [C] Catalisador',
+    dropHintMobile: 'ARRASTE para mirar  •  TOQUE para soltar  •  Funda orbes iguais!',
+    gameLogicTip: '🎯 COMO JOGAR: Solte orbes! Colida 2 núcleos iguais (H+ + H+ = He) para fundir orbes maiores e pontuar!',
+    btnEvoGuide: 'CADEIA [?]',
 
     // Tactical Abilities
-    btnDrop: 'SOLTAR ORBE',
-    btnPulse: 'PULSO GRAV [F]',
+    btnDrop: 'SOLTAR',
+    btnPulse: 'PULSO [F]',
     btnVent: 'PURGAR [V]',
     btnCatalyst: 'CATALISADOR [C]',
     ready: 'PRONTO',
@@ -147,7 +155,7 @@ export const TRANSLATIONS = {
     selectSectorSub: 'Funda os núcleos de plasma alvo e conquiste 3 Estrelas para desbloquear novas câmaras.',
     launchSector: 'INICIAR',
     lockedSector: 'BLOQUEADO',
-    goalScore: 'Meta',
+    goalScore: 'Meta de Pontos',
     goalTier: 'Fundir',
 
     // Victory Modal
@@ -160,7 +168,7 @@ export const TRANSLATIONS = {
 
     // Game Over Modal
     meltdownTitle: 'COLAPSO DO REATOR!',
-    meltdownOverflow: 'O plasma líquido transbordou a barreira de contenção magnética!',
+    meltdownOverflow: 'O plasma líquido transbordou a barreira por muito tempo!',
     meltdownTimeout: 'O tempo crítico esgotou antes da estabilização do núcleo!',
     reviveBtn: '[VÍDEO] ESCUDO DE EMERGÊNCIA (+30s & LIMPAR TOPO)',
     retryBtn: 'TENTAR NOVAMENTE',
@@ -181,14 +189,15 @@ export const TRANSLATIONS = {
       'Núcleo de Fusão Nebula'
     ],
 
-    // Evolution Wheel
-    evolutionChain: 'CADEIA DE EVOLUÇÃO DE FUSÃO'
+    // Evolution Modal
+    evolutionChain: 'CADEIA DE EVOLUÇÃO DE FUSÃO',
+    evolutionModalTitle: 'CADEIA DE EVOLUÇÃO DOS NÚCLEOS',
+    evolutionModalSub: 'Funda dois núcleos idênticos para sintetizar o próximo elemento:'
   }
 };
 
 class I18nManager {
   constructor() {
-    // CrazyGames requires English by default, with optional locale detection
     this.lang = 'en';
     try {
       const savedLang = localStorage.getItem('nebula_drops_lang');

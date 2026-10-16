@@ -1,11 +1,9 @@
 /**
- * @fileoverview Main Game Engine & Renderer for Nebula Drops: Fusion Core
- * Implements:
- * - Fixed Timestep Physics Accumulator (FIXED_DT = 1/60s) for identical behavior on 60Hz, 144Hz, and 165Hz
- * - Interactive Magnetic Dropper Pod with holographic trajectory line & drop buffering
- * - 11-Tier Liquid Plasma Core rendering with inner glow, specular highlights, and Squash & Stretch
- * - Side diagnostic panels (Fusion Evolution Chain & Reactor Telemetry)
- * - Full CrazyGames SDK v3 lifecycle & Ad-Pause / Tab-Blur safety
+ * @fileoverview Main Game Engine & Dual-Mode Adaptive Renderer for Nebula Drops: Fusion Core
+ * - Automatically adapts between Portrait (540x960) and Landscape (960x540)
+ * - Fixed Timestep Physics Accumulator (FIXED_DT = 1/60s) for 60Hz, 144Hz, and 165Hz
+ * - Clear On-Screen Drop & Merge visual guidance
+ * - Settled-only Danger countdown timer to prevent unexpected meltdowns
  */
 
 import { FIXED_DT, PhysicsWorld } from './physics.js';
@@ -15,71 +13,73 @@ import { storage } from './storage.js';
 import { i18n } from './i18n.js';
 import { crazyGames } from './crazygames.js';
 
-const LOGICAL_WIDTH = 960;
-const LOGICAL_HEIGHT = 540;
-
 export class GameEngine {
   constructor(canvas, hud) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.hud = hud;
 
+    this.isPortrait = false;
+    this.viewW = 960;
+    this.viewH = 540;
+
     this.bounds = {
-      left: 290,
-      right: 670,
-      top: 102,
-      bottom: 482,
-      dangerY: 146
+      left: 280,
+      right: 680,
+      top: 85,
+      bottom: 485,
+      dangerY: 135
     };
 
     this.physics = new PhysicsWorld(this.bounds, {
       onFusion: (mergedOrb, newTier) => this._handleFusion(mergedOrb, newTier),
-      onOverflowDanger: (ratio) => this._handleOverflowDanger(ratio),
+      onOverflowDanger: (ratio, secondsLeft) => this._handleOverflowDanger(ratio, secondsLeft),
       onMeltdown: (reason) => this._handleMeltdown(reason)
     });
 
-    this.currentSectorIndex = 0; // 0-based (Sector 1..12)
+    this.currentSectorIndex = 0;
     this.isEndless = false;
     this.score = 0;
     this.highestTierReached = 1;
-    this.timeRemaining = 120;
+    this.timeRemaining = 140;
 
     // Dropper Pod state
     this.dropperX = (this.bounds.left + this.bounds.right) * 0.5;
-    this.dropperY = 92;
+    this.dropperY = 75;
     this.currentOrbTier = 1;
     this.nextOrbTier = 2;
     this.isCurrentCatalyst = false;
     this.dropCooldown = 0;
     this.dropBufferTimer = 0;
 
-    // Tactical abilities per sector
+    // Tactical abilities
     this.pulseUses = 2;
     this.ventUses = 2;
     this.catalystUses = 1;
 
-    // Combo & Shield state
+    // Combo & Danger
     this.comboCount = 0;
     this.comboTimer = 0;
     this.shieldTimer = 0;
     this.dangerRatio = 0;
+    this.dangerSecondsLeft = 5.0;
     this.alarmCooldown = 0;
     this.reviveUsed = false;
 
-    // Lifecycle flags
+    // Lifecycle
     this.isRunning = false;
     this.isPaused = false;
     this.isAdPaused = false;
     this.isRoundOver = false;
 
-    // Input state
+    // Controls
     this.keys = { left: false, right: false };
     this.isPointerDragging = false;
 
     // Background stars
-    this.bgStars = Array.from({ length: 65 }, () => ({
-      x: Math.random() * LOGICAL_WIDTH,
-      y: Math.random() * LOGICAL_HEIGHT,
+    this.bgStars = Array.from({ length: 70 }, () => ({
+      x: Math.random() * 960,
+      y: Math.random() * 960,
       r: Math.random() * 1.8 + 0.5,
       phase: Math.random() * Math.PI * 2,
       speed: Math.random() * 1.5 + 0.5
@@ -89,27 +89,59 @@ export class GameEngine {
     this.accumulator = 0;
 
     this._bindInputs();
-    this._resize();
-    window.addEventListener('resize', () => this._resize());
+    this._recalculateLayout();
+    window.addEventListener('resize', () => this._recalculateLayout());
   }
 
-  _resize() {
+  _recalculateLayout() {
+    this.isPortrait = window.innerHeight > window.innerWidth;
+
+    if (this.isPortrait) {
+      this.viewW = 540;
+      this.viewH = 960;
+      this.bounds = {
+        left: 36,
+        right: 504,
+        top: 130,
+        bottom: 810,
+        dangerY: 200
+      };
+      this.dropperY = 110;
+    } else {
+      this.viewW = 960;
+      this.viewH = 540;
+      this.bounds = {
+        left: 280,
+        right: 680,
+        top: 85,
+        bottom: 485,
+        dangerY: 135
+      };
+      this.dropperY = 72;
+    }
+
+    this.physics.setBounds(this.bounds);
+    this._clampDropperX(this.dropperX);
+
+    // Apply high-DPI scaling
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    this.canvas.width = LOGICAL_WIDTH * dpr;
-    this.canvas.height = LOGICAL_HEIGHT * dpr;
+    this.canvas.width = Math.floor(this.viewW * dpr);
+    this.canvas.height = Math.floor(this.viewH * dpr);
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   _clientToLogical(clientX, clientY) {
     const rect = this.canvas.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) return { x: LOGICAL_WIDTH * 0.5, y: LOGICAL_HEIGHT * 0.5 };
+    if (rect.width === 0 || rect.height === 0) {
+      return { x: this.viewW * 0.5, y: this.viewH * 0.5 };
+    }
 
-    const scaleX = LOGICAL_WIDTH / rect.width;
-    const scaleY = LOGICAL_HEIGHT / rect.height;
+    const scaleX = this.viewW / rect.width;
+    const scaleY = this.viewH / rect.height;
     const scale = Math.max(scaleX, scaleY);
 
-    const renderedW = LOGICAL_WIDTH / scale;
-    const renderedH = LOGICAL_HEIGHT / scale;
+    const renderedW = this.viewW / scale;
+    const renderedH = this.viewH / scale;
     const offsetX = rect.left + (rect.width - renderedW) * 0.5;
     const offsetY = rect.top + (rect.height - renderedH) * 0.5;
 
@@ -141,6 +173,7 @@ export class GameEngine {
       if (e.code === 'ArrowRight' || e.code === 'KeyD') this.keys.right = false;
     });
 
+    // Touch & Mouse aiming
     this.canvas.addEventListener('pointerdown', (e) => {
       if (this.isPaused || this.isAdPaused || this.isRoundOver) return;
       this.isPointerDragging = true;
@@ -151,7 +184,7 @@ export class GameEngine {
     window.addEventListener('pointermove', (e) => {
       if (this.isPaused || this.isAdPaused || this.isRoundOver) return;
       const pt = this._clientToLogical(e.clientX, e.clientY);
-      if (pt.x >= this.bounds.left - 40 && pt.x <= this.bounds.right + 40) {
+      if (pt.x >= this.bounds.left - 50 && pt.x <= this.bounds.right + 50) {
         this._clampDropperX(pt.x);
       }
     });
@@ -165,7 +198,7 @@ export class GameEngine {
       this.requestDrop();
     });
 
-    // Tab switch / window blur protection (prevents delta spikes)
+    // Tab-blur safety
     document.addEventListener('visibilitychange', () => {
       if (document.hidden && this.isRunning && !this.isPaused && !this.isRoundOver && !this.isAdPaused) {
         this.hud.openPauseModal();
@@ -175,7 +208,7 @@ export class GameEngine {
 
   _clampDropperX(targetX) {
     const r = ORB_TIERS[this.currentOrbTier - 1].radius;
-    this.dropperX = Math.max(this.bounds.left + r + 3, Math.min(this.bounds.right - r - 3, targetX));
+    this.dropperX = Math.max(this.bounds.left + r + 4, Math.min(this.bounds.right - r - 4, targetX));
   }
 
   start() {
@@ -193,7 +226,7 @@ export class GameEngine {
 
     this.physics.clear();
     this.physics.gravity = this.isEndless ? 720 : sec.gravity;
-    this.physics.restitution = this.isEndless ? 0.38 : sec.restitution;
+    this.physics.restitution = this.isEndless ? 0.35 : sec.restitution;
 
     this.score = 0;
     this.highestTierReached = 1;
@@ -202,6 +235,7 @@ export class GameEngine {
     this.comboTimer = 0;
     this.shieldTimer = 0;
     this.dangerRatio = 0;
+    this.dangerSecondsLeft = 5.0;
     this.reviveUsed = false;
     this.isRoundOver = false;
     this.isPaused = false;
@@ -217,12 +251,13 @@ export class GameEngine {
     this.dropCooldown = 0.25;
     this.dropBufferTimer = 0;
 
-    // Spawn initial pre-seeded orbs in the reactor chamber
+    // Spawn gentle, grounded starter orbs on the chamber floor
     const centerX = (this.bounds.left + this.bounds.right) * 0.5;
     if (!this.isEndless && Array.isArray(sec.initialOrbs)) {
-      sec.initialOrbs.forEach((initOrb, idx) => {
+      sec.initialOrbs.forEach((initOrb) => {
         const ox = centerX + initOrb.xOffset;
-        const oy = this.bounds.bottom - 50 - idx * 35;
+        const cfg = ORB_TIERS[initOrb.tier - 1];
+        const oy = this.bounds.bottom - cfg.radius - 2;
         this.physics.spawnOrb(initOrb.tier, ox, oy, false);
         if (initOrb.tier > this.highestTierReached) {
           this.highestTierReached = initOrb.tier;
@@ -230,7 +265,7 @@ export class GameEngine {
       });
     }
 
-    this.hud.setDangerVisible(false, false);
+    this.hud.setDangerVisible(false, false, 5.0);
     this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses);
     this._syncHUD();
     crazyGames.gameplayStart();
@@ -241,7 +276,6 @@ export class GameEngine {
     if (this.dropCooldown <= 0) {
       this._executeDrop();
     } else {
-      // Jump/Drop buffering (0.15s tolerance)
       this.dropBufferTimer = 0.15;
     }
   }
@@ -256,12 +290,12 @@ export class GameEngine {
       this.bounds.top + 18,
       this.isCurrentCatalyst
     );
-    spawned.vy = 95;
+    spawned.vy = 85;
     sound.playDrop(this.currentOrbTier);
 
     this.isCurrentCatalyst = false;
     this.currentOrbTier = this.nextOrbTier;
-    const maxSpawnTier = Math.min(4, Math.max(3, this.highestTierReached - 1));
+    const maxSpawnTier = Math.min(3, Math.max(2, this.highestTierReached - 1));
     this.nextOrbTier = Math.floor(Math.random() * maxSpawnTier) + 1;
     this._clampDropperX(this.dropperX);
     this._syncHUD();
@@ -296,10 +330,10 @@ export class GameEngine {
     this.isRoundOver = false;
     this.isPaused = false;
     this.timeRemaining += 30;
-    this.shieldTimer = 3.5; // 3.5s invulnerability shield
+    this.shieldTimer = 3.5;
     this.physics.clearTopOverflowOrbs();
     sound.playVictory();
-    this.hud.setDangerVisible(false, true);
+    this.hud.setDangerVisible(false, true, 5.0);
     this._syncHUD();
     crazyGames.gameplayStart();
   }
@@ -325,14 +359,14 @@ export class GameEngine {
 
     sound.playMerge(newTier, this.comboCount);
 
-    const popupLabel = this.comboCount > 1
-      ? `+${pointsAwarded} (${this.comboCount}x!)`
-      : `+${pointsAwarded}`;
-    this.physics.addFloatingText(popupLabel, mergedOrb.x, mergedOrb.y - 12, cfg.color, 1.15);
+    const prevSymbol = ORB_TIERS[newTier - 2] ? ORB_TIERS[newTier - 2].symbol : 'H+';
+    const popupText = this.comboCount > 1
+      ? `${prevSymbol}+${prevSymbol} = ${cfg.symbol} (+${pointsAwarded} pts, ${this.comboCount}x!)`
+      : `${prevSymbol}+${prevSymbol} = ${cfg.symbol} (+${pointsAwarded} pts)`;
+    this.physics.addFloatingText(popupText, mergedOrb.x, mergedOrb.y - 12, cfg.color, 1.15);
 
     this._syncHUD();
 
-    // Check Sector Victory condition
     if (!this.isEndless && !this.isRoundOver) {
       const sec = SECTORS[this.currentSectorIndex];
       if (this.score >= sec.targetScore && this.highestTierReached >= sec.targetTier) {
@@ -341,12 +375,13 @@ export class GameEngine {
     }
   }
 
-  _handleOverflowDanger(ratio) {
+  _handleOverflowDanger(ratio, secondsLeft) {
     this.dangerRatio = ratio;
+    this.dangerSecondsLeft = secondsLeft;
     if (this.shieldTimer > 0) {
-      this.hud.setDangerVisible(false, true);
+      this.hud.setDangerVisible(false, true, secondsLeft);
     } else {
-      this.hud.setDangerVisible(ratio > 0.15, false);
+      this.hud.setDangerVisible(ratio > 0.1, false, secondsLeft);
     }
   }
 
@@ -408,8 +443,6 @@ export class GameEngine {
 
     if (!this.isPaused && !this.isAdPaused && !this.isRoundOver) {
       this.accumulator += rawDt;
-
-      // Fixed Timestep loop (guarantees identical physics on 60Hz, 144Hz, and 165Hz)
       while (this.accumulator >= FIXED_DT) {
         this._fixedUpdate(FIXED_DT);
         this.accumulator -= FIXED_DT;
@@ -421,12 +454,10 @@ export class GameEngine {
   }
 
   _fixedUpdate(dt) {
-    // Move dropper via keyboard if active
-    const moveSpeed = 360;
+    const moveSpeed = 380;
     if (this.keys.left) this._clampDropperX(this.dropperX - moveSpeed * dt);
     if (this.keys.right) this._clampDropperX(this.dropperX + moveSpeed * dt);
 
-    // Drop cooldown & buffering
     if (this.dropCooldown > 0) {
       this.dropCooldown = Math.max(0, this.dropCooldown - dt);
     }
@@ -437,30 +468,26 @@ export class GameEngine {
       }
     }
 
-    // Combo decay
     if (this.comboTimer > 0) {
       this.comboTimer = Math.max(0, this.comboTimer - dt);
       if (this.comboTimer <= 0) this.comboCount = 0;
     }
 
-    // Invulnerability Shield decay
     if (this.shieldTimer > 0) {
       this.shieldTimer = Math.max(0, this.shieldTimer - dt);
       if (this.shieldTimer <= 0) {
-        this.hud.setDangerVisible(this.dangerRatio > 0.15, false);
+        this.hud.setDangerVisible(this.dangerRatio > 0.1, false, this.dangerSecondsLeft);
       }
     }
 
-    // Danger alarm beep
-    if (this.dangerRatio > 0.35 && this.shieldTimer <= 0) {
+    if (this.dangerRatio > 0.3 && this.shieldTimer <= 0) {
       this.alarmCooldown -= dt;
       if (this.alarmCooldown <= 0) {
         sound.playDangerAlarm();
-        this.alarmCooldown = 0.65;
+        this.alarmCooldown = 0.7;
       }
     }
 
-    // Sector countdown timer
     if (!this.isEndless) {
       this.timeRemaining -= dt;
       if (this.timeRemaining <= 0) {
@@ -479,46 +506,83 @@ export class GameEngine {
     const ctx = this.ctx;
     ctx.save();
 
-    // Deep orbital station background
-    const bgGrad = ctx.createRadialGradient(480, 270, 40, 480, 270, 560);
-    bgGrad.addColorStop(0, '#0a1936');
-    bgGrad.addColorStop(0.6, '#050c1d');
-    bgGrad.addColorStop(1, '#02050d');
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+    const w = this.viewW;
+    const h = this.viewH;
 
-    // Twinkling cosmic stars
+    // Deep orbital background
+    const bgGrad = ctx.createRadialGradient(w * 0.5, h * 0.5, 40, w * 0.5, h * 0.5, Math.max(w, h) * 0.75);
+    bgGrad.addColorStop(0, '#091836');
+    bgGrad.addColorStop(0.6, '#040b1a');
+    bgGrad.addColorStop(1, '#02050e');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Cosmic stars
     for (const st of this.bgStars) {
-      const alpha = 0.25 + 0.45 * Math.sin(timeSec * st.speed + st.phase);
+      const alpha = 0.2 + 0.45 * Math.sin(timeSec * st.speed + st.phase);
       ctx.fillStyle = `rgba(186, 230, 253, ${alpha})`;
       ctx.beginPath();
-      ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+      ctx.arc((st.x * (w / 960)) % w, (st.y * (h / 540)) % h, st.r, 0, Math.PI * 2);
       ctx.fill();
     }
 
     // Apply Camera Shake (Trauma² offset & roll)
     const shaker = this.physics.cameraShaker;
-    ctx.translate(LOGICAL_WIDTH * 0.5 + shaker.offsetX, LOGICAL_HEIGHT * 0.5 + shaker.offsetY);
+    ctx.translate(w * 0.5 + shaker.offsetX, h * 0.5 + shaker.offsetY);
     ctx.rotate(shaker.angle);
-    ctx.translate(-LOGICAL_WIDTH * 0.5, -LOGICAL_HEIGHT * 0.5);
+    ctx.translate(-w * 0.5, -h * 0.5);
 
-    // 1. Render Left Side Panel: Fusion Evolution Chain
-    this._renderEvolutionPanel(ctx, timeSec);
+    // Only render side panels on Landscape desktop!
+    if (!this.isPortrait) {
+      this._renderEvolutionPanel(ctx, timeSec);
+      this._renderTelemetryPanel(ctx, timeSec);
+    } else {
+      // In Portrait, render a sleek tutorial / status banner at the top of the chamber
+      this._renderPortraitChamberBanner(ctx, timeSec);
+    }
 
-    // 2. Render Right Side Panel: Reactor Telemetry & Progress
-    this._renderTelemetryPanel(ctx, timeSec);
-
-    // 3. Render Central Containment Vessel & Trajectory Line
+    // Central Containment Vessel & Trajectory Line
     this._renderContainmentVessel(ctx, timeSec);
 
-    // 4. Render Active Orbs with Squash & Stretch
+    // Active Orbs
     for (const orb of this.physics.orbs) {
       this._renderOrb(ctx, orb, timeSec);
     }
 
-    // 5. Render Shockwaves, Particles, and Floating Score Popups
+    // Effects & Popups
     this._renderEffects(ctx);
 
+    ctx.restore();
+  }
+
+  _renderPortraitChamberBanner(ctx, timeSec) {
+    const { left, right, top } = this.bounds;
+    const sec = SECTORS[this.currentSectorIndex];
+    const targetOrb = ORB_TIERS[sec.targetTier - 1];
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(left, top - 48, right - left, 36, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = "800 11.5px 'Montserrat', sans-serif";
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    if (this.comboCount > 1) {
+      ctx.fillStyle = '#facc15';
+      ctx.fillText(`⚡ ${this.comboCount}X COMBO!  •  META: ${targetOrb.symbol} (T${sec.targetTier})`, (left + right) * 0.5, top - 30);
+    } else {
+      const hint = i18n.lang === 'pt'
+        ? `🎯 COMBINE ORBES IGUAIS! ALVO: ${targetOrb.symbol} (T${sec.targetTier})`
+        : `🎯 MERGE MATCHING ORBS! GOAL: ${targetOrb.symbol} (T${sec.targetTier})`;
+      ctx.fillText(hint, (left + right) * 0.5, top - 30);
+    }
     ctx.restore();
   }
 
@@ -527,30 +591,31 @@ export class GameEngine {
     const width = right - left;
     const height = bottom - top;
 
-    // Vessel interior glass backdrop
+    // Vessel interior glass
     const glassGrad = ctx.createLinearGradient(left, top, left, bottom);
     glassGrad.addColorStop(0, 'rgba(8, 22, 48, 0.55)');
     glassGrad.addColorStop(1, 'rgba(3, 10, 24, 0.85)');
     ctx.fillStyle = glassGrad;
     ctx.fillRect(left, top, width, height);
 
-    // Subtle interior magnetic grid lines
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.07)';
+    // Subtle magnetic grid
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
     ctx.lineWidth = 1;
-    for (let gx = left + 38; gx < right; gx += 38) {
+    const step = this.isPortrait ? 48 : 38;
+    for (let gx = left + step; gx < right; gx += step) {
       ctx.beginPath();
       ctx.moveTo(gx, top);
       ctx.lineTo(gx, bottom);
       ctx.stroke();
     }
-    for (let gy = top + 38; gy < bottom; gy += 38) {
+    for (let gy = top + step; gy < bottom; gy += step) {
       ctx.beginPath();
       ctx.moveTo(left, gy);
       ctx.lineTo(right, gy);
       ctx.stroke();
     }
 
-    // Holographic Drop Guide Line & Dropper Pod
+    // Trajectory Line & Dropper Pod
     if (!this.isRoundOver) {
       const currentCfg = ORB_TIERS[this.currentOrbTier - 1];
       ctx.save();
@@ -563,40 +628,40 @@ export class GameEngine {
       ctx.stroke();
       ctx.restore();
 
-      // Magnetic Emitter Pod Claw
+      // Dropper Pod Claw
       ctx.save();
       ctx.strokeStyle = '#00f5ff';
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(this.dropperX - 24, this.dropperY - 14);
-      ctx.lineTo(this.dropperX, this.dropperY - 24);
-      ctx.lineTo(this.dropperX + 24, this.dropperY - 14);
+      ctx.moveTo(this.dropperX - 22, this.dropperY - 14);
+      ctx.lineTo(this.dropperX, this.dropperY - 22);
+      ctx.lineTo(this.dropperX + 22, this.dropperY - 14);
       ctx.stroke();
       ctx.restore();
 
-      // Preview Orb held in Dropper Pod
+      // Preview Orb
       if (this.dropCooldown <= 0.15) {
         this._renderPreviewOrb(ctx, this.dropperX, this.dropperY, this.currentOrbTier, this.isCurrentCatalyst, timeSec);
       }
     }
 
-    // Danger Threshold Laser Line
+    // Danger Laser Line
     ctx.save();
     const isDanger = this.dangerRatio > 0.1;
     ctx.setLineDash([10, 6]);
     ctx.strokeStyle = this.shieldTimer > 0
       ? '#00f5ff'
       : isDanger
-        ? `rgba(239, 68, 68, ${0.65 + 0.35 * Math.sin(timeSec * 14)})`
-        : 'rgba(239, 68, 68, 0.42)';
-    ctx.lineWidth = isDanger ? 2.8 : 1.8;
+        ? `rgba(239, 68, 68, ${0.7 + 0.3 * Math.sin(timeSec * 16)})`
+        : 'rgba(239, 68, 68, 0.45)';
+    ctx.lineWidth = isDanger ? 3 : 2;
     ctx.beginPath();
-    ctx.moveTo(left + 4, dangerY);
-    ctx.lineTo(right - 4, dangerY);
+    ctx.moveTo(left + 2, dangerY);
+    ctx.lineTo(right - 2, dangerY);
     ctx.stroke();
     ctx.restore();
 
-    // Glowing Metallic Containment Walls (Left, Bottom, Right)
+    // Glowing Containment Walls
     ctx.save();
     ctx.shadowColor = this.shieldTimer > 0 ? '#00f5ff' : '#38bdf8';
     ctx.shadowBlur = 14;
@@ -604,10 +669,10 @@ export class GameEngine {
     ctx.lineWidth = 4.5;
     ctx.lineJoin = 'round';
     ctx.beginPath();
-    ctx.moveTo(left, top - 8);
+    ctx.moveTo(left, top - 24);
     ctx.lineTo(left, bottom);
     ctx.lineTo(right, bottom);
-    ctx.lineTo(right, top - 8);
+    ctx.lineTo(right, top - 24);
     ctx.stroke();
     ctx.restore();
   }
@@ -655,7 +720,6 @@ export class GameEngine {
 
     const r = orb.radius;
 
-    // Outer plasma glow
     const grad = ctx.createRadialGradient(-r * 0.28, -r * 0.28, r * 0.12, 0, 0, r);
     if (orb.isCatalyst) {
       const hue = (timeSec * 160) % 360;
@@ -673,18 +737,15 @@ export class GameEngine {
     ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.fill();
 
-    // Rim highlight
     ctx.strokeStyle = orb.overflowTime > 0.2 ? '#ef4444' : 'rgba(255, 255, 255, 0.75)';
     ctx.lineWidth = orb.overflowTime > 0.2 ? 3 : 2;
     ctx.stroke();
 
-    // Specular liquid droplet shine
     ctx.fillStyle = 'rgba(255, 255, 255, 0.38)';
     ctx.beginPath();
     ctx.ellipse(-r * 0.32, -r * 0.34, r * 0.26, r * 0.14, -Math.PI / 4, 0, Math.PI * 2);
     ctx.fill();
 
-    // Element Symbol & Tier badge
     ctx.fillStyle = '#020617';
     ctx.font = `900 ${Math.max(11, Math.round(r * 0.48))}px 'Montserrat', sans-serif`;
     ctx.textAlign = 'center';
@@ -696,12 +757,12 @@ export class GameEngine {
 
   _renderEvolutionPanel(ctx, timeSec) {
     const panelX = 22;
-    const panelY = 74;
+    const panelY = 66;
     const panelW = 246;
-    const panelH = 408;
+    const panelH = 416;
 
     ctx.save();
-    ctx.fillStyle = 'rgba(7, 15, 32, 0.78)';
+    ctx.fillStyle = 'rgba(7, 15, 32, 0.82)';
     ctx.strokeStyle = 'rgba(56, 189, 248, 0.28)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -717,7 +778,7 @@ export class GameEngine {
     const sec = SECTORS[this.currentSectorIndex];
 
     ORB_TIERS.forEach((t, idx) => {
-      const rowY = panelY + 44 + idx * 32.5;
+      const rowY = panelY + 44 + idx * 33;
       const isTarget = !this.isEndless && t.tier === sec.targetTier;
       const isReached = t.tier <= this.highestTierReached;
 
@@ -726,7 +787,6 @@ export class GameEngine {
         ctx.fillRect(panelX + 8, rowY - 13, panelW - 16, 26);
       }
 
-      // Mini orb icon
       ctx.fillStyle = isReached ? t.color : 'rgba(148, 163, 184, 0.3)';
       ctx.beginPath();
       ctx.arc(panelX + 26, rowY, 9 + idx * 0.35, 0, Math.PI * 2);
@@ -738,12 +798,11 @@ export class GameEngine {
       ctx.textBaseline = 'middle';
       ctx.fillText(t.symbol, panelX + 26, rowY + 0.5);
 
-      // Tier Name & Points
       ctx.textAlign = 'left';
       ctx.fillStyle = isTarget ? '#facc15' : isReached ? '#f8fafc' : '#64748b';
       ctx.font = "700 10.5px 'Montserrat', sans-serif";
       const name = i18n.getTierName(t.tier);
-      ctx.fillText(`T${t.tier} ${name.slice(0, 17)}`, panelX + 46, rowY);
+      ctx.fillText(`T${t.tier} ${name.slice(0, 16)}`, panelX + 46, rowY);
 
       ctx.textAlign = 'right';
       ctx.fillStyle = isTarget ? '#facc15' : '#38bdf8';
@@ -756,12 +815,12 @@ export class GameEngine {
 
   _renderTelemetryPanel(ctx, timeSec) {
     const panelX = 692;
-    const panelY = 74;
+    const panelY = 66;
     const panelW = 246;
-    const panelH = 408;
+    const panelH = 416;
 
     ctx.save();
-    ctx.fillStyle = 'rgba(7, 15, 32, 0.78)';
+    ctx.fillStyle = 'rgba(7, 15, 32, 0.82)';
     ctx.strokeStyle = 'rgba(56, 189, 248, 0.28)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -772,7 +831,6 @@ export class GameEngine {
     const sec = SECTORS[this.currentSectorIndex];
     const centerX = panelX + panelW * 0.5;
 
-    // Sector Title
     ctx.fillStyle = '#00f5ff';
     ctx.font = "900 13px 'Montserrat', sans-serif";
     ctx.textAlign = 'center';
@@ -781,7 +839,6 @@ export class GameEngine {
       : (i18n.lang === 'pt' ? sec.namePt : sec.nameEn).toUpperCase();
     ctx.fillText(secName, centerX, panelY + 28);
 
-    // Score Quota Progress Bar
     const quotaPct = this.isEndless ? 1 : Math.min(1, this.score / Math.max(1, sec.targetScore));
     ctx.fillStyle = '#94a3b8';
     ctx.font = "700 11px 'Montserrat', sans-serif";
@@ -800,7 +857,6 @@ export class GameEngine {
     ctx.roundRect(panelX + 20, panelY + 66, Math.max(8, (panelW - 40) * quotaPct), 12, 6);
     ctx.fill();
 
-    // Target Core Spotlight
     const targetCfg = ORB_TIERS[sec.targetTier - 1];
     ctx.fillStyle = '#e2e8f0';
     ctx.font = "800 11px 'Montserrat', sans-serif";
@@ -808,7 +864,6 @@ export class GameEngine {
 
     this._renderPreviewOrb(ctx, centerX, panelY + 158, sec.targetTier, false, timeSec);
 
-    // Active Combo Indicator
     if (this.comboCount > 1) {
       ctx.fillStyle = '#facc15';
       ctx.font = "900 18px 'Montserrat', sans-serif";
@@ -819,12 +874,10 @@ export class GameEngine {
       ctx.fillText(`${i18n.t('best')}: ${storage.data.highScore}`, centerX, panelY + 235);
     }
 
-    // Plasma Shards balance
     ctx.fillStyle = '#38bdf8';
     ctx.font = "800 13px 'Montserrat', sans-serif";
     ctx.fillText(`♦ ${storage.data.plasmaShards || 0} SHARDS`, centerX, panelY + 272);
 
-    // Controls summary box
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
     ctx.beginPath();
     ctx.roundRect(panelX + 16, panelY + 298, panelW - 32, 92, 10);
@@ -843,7 +896,6 @@ export class GameEngine {
   }
 
   _renderEffects(ctx) {
-    // Shockwave rings
     for (const sw of this.physics.shockwaves) {
       ctx.save();
       ctx.globalAlpha = Math.max(0, sw.alpha);
@@ -855,7 +907,6 @@ export class GameEngine {
       ctx.restore();
     }
 
-    // Particles with quadratic fade
     for (const p of this.physics.particles) {
       const lifeRatio = 1 - p.age / p.life;
       const alpha = lifeRatio * lifeRatio;
@@ -868,7 +919,6 @@ export class GameEngine {
       ctx.restore();
     }
 
-    // Floating score texts
     for (const ft of this.physics.floatingTexts) {
       const alpha = Math.max(0, 1 - ft.age / ft.life);
       ctx.save();

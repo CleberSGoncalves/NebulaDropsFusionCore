@@ -3,9 +3,10 @@
  * Implements:
  * - Fixed Timestep (FIXED_DT = 1/60s) with accumulator for identical physics on 60Hz, 144Hz, and 165Hz
  * - Multi-iteration Impulse + Positional Correction Circle Solver (prevents tunneling and jitter)
- * - Squash & Stretch spring-damped oscillator per orb (SquashStretch2D equivalent)
- * - Camera Shake with Trauma² exponential decay (JuiceCamera2D equivalent)
- * - Hit-Stop impact freeze manager (HitStopManager equivalent)
+ * - Infinite upward side walls (prevents orbs from popping over container edges)
+ * - Settled-only Danger Line overflow tracking with 5.0s grace period & countdown
+ * - Squash & Stretch spring-damped oscillator per orb
+ * - Camera Shake with Trauma² exponential decay & Hit-Stop impact freeze
  */
 
 import { ORB_TIERS } from './levels.js';
@@ -67,11 +68,10 @@ export class PlasmaOrb {
     this.vx = 0;
     this.vy = 0;
     this.rotation = 0;
-    this.angularVel = 0;
 
     // Squash & Stretch spring state
-    this.scaleX = 0.76;
-    this.scaleY = 1.28;
+    this.scaleX = 0.78;
+    this.scaleY = 1.25;
     this.scaleVelX = 0;
     this.scaleVelY = 0;
 
@@ -82,14 +82,14 @@ export class PlasmaOrb {
   }
 
   triggerSquash(intensity = 1.0) {
-    const k = Math.min(1.35, Math.max(0.25, intensity));
-    this.scaleX = 1.0 + 0.28 * k;
-    this.scaleY = 1.0 - 0.24 * k;
+    const k = Math.min(1.2, Math.max(0.2, intensity));
+    this.scaleX = 1.0 + 0.25 * k;
+    this.scaleY = 1.0 - 0.22 * k;
   }
 
   triggerFusionPop() {
-    this.scaleX = 1.42;
-    this.scaleY = 0.65;
+    this.scaleX = 1.38;
+    this.scaleY = 0.68;
   }
 
   updateSpring(dt) {
@@ -109,16 +109,15 @@ export class PlasmaOrb {
 
 export class PhysicsWorld {
   constructor(bounds, callbacks = {}) {
-    // Reactor Vessel Bounds (logical 960x540 canvas coordinates)
     this.bounds = bounds || {
-      left: 290,
-      right: 670,
-      top: 105,
-      bottom: 495,
-      dangerY: 145
+      left: 280,
+      right: 680,
+      top: 90,
+      bottom: 490,
+      dangerY: 135
     };
     this.gravity = 700;
-    this.restitution = 0.36;
+    this.restitution = 0.35;
     this.wallFriction = 0.985;
 
     this.orbs = [];
@@ -133,6 +132,10 @@ export class PhysicsWorld {
     this.onFusion = callbacks.onFusion || null;
     this.onOverflowDanger = callbacks.onOverflowDanger || null;
     this.onMeltdown = callbacks.onMeltdown || null;
+  }
+
+  setBounds(newBounds) {
+    this.bounds = { ...newBounds };
   }
 
   clear() {
@@ -162,12 +165,10 @@ export class PhysicsWorld {
   /**
    * Advances physics by exactly one fixed timestep (FIXED_DT = 1/60s).
    * @param {number} dt
-   * @param {boolean} shieldActive - If true, prevents overflow meltdown
+   * @param {boolean} shieldActive
    */
   step(dt = FIXED_DT, shieldActive = false) {
     this.cameraShaker.update(dt);
-
-    // Update visual particles, shockwaves, and floating texts even during Hit-Stop
     this._updateEffects(dt);
 
     if (this.hitStopTimer > 0) {
@@ -192,18 +193,18 @@ export class PhysicsWorld {
         o.y += o.vy * subDt;
         o.rotation += (o.vx / Math.max(18, o.radius)) * subDt;
 
-        // Container wall collisions
+        // Container wall collisions (Extended upwards infinitely so orbs cannot escape)
         if (o.x - o.radius < this.bounds.left) {
           o.x = this.bounds.left + o.radius;
-          if (o.vx < -40 && o.impactCooldown <= 0) {
-            o.triggerSquash(Math.min(0.8, Math.abs(o.vx) / 350));
+          if (o.vx < -35 && o.impactCooldown <= 0) {
+            o.triggerSquash(Math.min(0.75, Math.abs(o.vx) / 320));
             o.impactCooldown = 0.12;
           }
           o.vx = Math.abs(o.vx) * this.restitution;
         } else if (o.x + o.radius > this.bounds.right) {
           o.x = this.bounds.right - o.radius;
-          if (o.vx > 40 && o.impactCooldown <= 0) {
-            o.triggerSquash(Math.min(0.8, Math.abs(o.vx) / 350));
+          if (o.vx > 35 && o.impactCooldown <= 0) {
+            o.triggerSquash(Math.min(0.75, Math.abs(o.vx) / 320));
             o.impactCooldown = 0.12;
           }
           o.vx = -Math.abs(o.vx) * this.restitution;
@@ -212,8 +213,8 @@ export class PhysicsWorld {
         // Bottom reactor floor collision
         if (o.y + o.radius > this.bounds.bottom) {
           o.y = this.bounds.bottom - o.radius;
-          if (o.vy > 75 && o.impactCooldown <= 0) {
-            const impactStrength = Math.min(1.0, o.vy / 420);
+          if (o.vy > 70 && o.impactCooldown <= 0) {
+            const impactStrength = Math.min(1.0, o.vy / 400);
             o.triggerSquash(impactStrength);
             sound.playBounce(impactStrength);
             o.impactCooldown = 0.14;
@@ -241,7 +242,7 @@ export class PhysicsWorld {
           if (distSq < minDist * minDist) {
             const dist = Math.sqrt(distSq) || 0.001;
 
-            // Check if eligible for Fusion!
+            // Check if eligible for Fusion
             const sameTier = a.tier === b.tier && a.tier < ORB_TIERS.length;
             const catalystMatch = (a.isCatalyst || b.isCatalyst) && Math.max(a.tier, b.tier) < ORB_TIERS.length;
 
@@ -256,7 +257,7 @@ export class PhysicsWorld {
                 x: (a.x + b.x) * 0.5,
                 y: (a.y + b.y) * 0.5,
                 vx: (a.vx + b.vx) * 0.4,
-                vy: Math.min(-45, (a.vy + b.vy) * 0.35)
+                vy: Math.min(-35, (a.vy + b.vy) * 0.3)
               });
               break;
             }
@@ -290,8 +291,8 @@ export class PhysicsWorld {
               b.vy += impulseY * b.invMass;
 
               const impactSpeed = Math.abs(velAlongNormal);
-              if (impactSpeed > 95 && a.impactCooldown <= 0 && b.impactCooldown <= 0) {
-                const sq = Math.min(0.75, impactSpeed / 480);
+              if (impactSpeed > 90 && a.impactCooldown <= 0 && b.impactCooldown <= 0) {
+                const sq = Math.min(0.7, impactSpeed / 450);
                 a.triggerSquash(sq);
                 b.triggerSquash(sq);
                 a.impactCooldown = 0.12;
@@ -312,11 +313,9 @@ export class PhysicsWorld {
         mergedOrb.vy = f.vy;
         mergedOrb.triggerFusionPop();
 
-        // Spawn shockwave & particle burst
         const cfg = ORB_TIERS[f.newTier - 1];
         this.spawnFusionParticles(mergedOrb.x, mergedOrb.y, cfg.color, f.newTier);
 
-        // Trauma² Screen Shake & Hit-Stop on high tiers
         const traumaAmount = Math.min(0.85, 0.16 + f.newTier * 0.055);
         this.cameraShaker.addTrauma(traumaAmount);
         if (f.newTier >= 5) {
@@ -330,40 +329,50 @@ export class PhysicsWorld {
     }
 
     // 4. Update Orb springs, ages, and Danger Line overflow check
-    let maxDangerRatio = 0;
+    // STRICT REFINEMENT: An orb only counts toward overflow if it is SETTLED (not in freefall / bouncing)
+    const OVERFLOW_LIMIT_SEC = 5.0; // 5.0 seconds grace period
+    let maxOverflowTime = 0;
+
     for (let i = 0; i < this.orbs.length; i++) {
       const o = this.orbs[i];
       o.age += dt;
       if (o.impactCooldown > 0) o.impactCooldown -= dt;
       o.updateSpring(dt);
 
-      // Only settled orbs (age > 1.1s) trigger the danger line timer
-      if (o.age > 1.1 && o.y - o.radius < this.bounds.dangerY) {
+      // Only settled orbs resting above the line trigger the countdown
+      const isSettledAboveLine = o.age > 1.2 &&
+        Math.abs(o.vy) < 32 &&
+        Math.abs(o.vx) < 32 &&
+        (o.y - o.radius < this.bounds.dangerY);
+
+      if (isSettledAboveLine) {
         if (!shieldActive) {
           o.overflowTime += dt;
         } else {
-          o.overflowTime = Math.max(0, o.overflowTime - dt * 2);
+          o.overflowTime = Math.max(0, o.overflowTime - dt * 2.5);
         }
-        const ratio = Math.min(1, o.overflowTime / 3.0);
-        if (ratio > maxDangerRatio) maxDangerRatio = ratio;
 
-        if (o.overflowTime >= 3.0 && !shieldActive) {
+        if (o.overflowTime > maxOverflowTime) {
+          maxOverflowTime = o.overflowTime;
+        }
+
+        if (o.overflowTime >= OVERFLOW_LIMIT_SEC && !shieldActive) {
           if (this.onMeltdown) this.onMeltdown('overflow');
           return;
         }
       } else {
-        o.overflowTime = Math.max(0, o.overflowTime - dt * 1.8);
+        o.overflowTime = Math.max(0, o.overflowTime - dt * 2.0);
       }
     }
 
+    const ratio = Math.min(1.0, maxOverflowTime / OVERFLOW_LIMIT_SEC);
+    const secondsLeft = Math.max(0, OVERFLOW_LIMIT_SEC - maxOverflowTime);
+
     if (this.onOverflowDanger) {
-      this.onOverflowDanger(maxDangerRatio);
+      this.onOverflowDanger(ratio, secondsLeft);
     }
   }
 
-  /**
-   * Gravitational Pulse (EMP): Applies an upward magnetic wave to unstick and rearrange orbs.
-   */
   triggerGravitationalPulse() {
     sound.playPulseEMP();
     this.cameraShaker.addTrauma(0.55);
@@ -372,22 +381,19 @@ export class PhysicsWorld {
       x: centerX,
       y: this.bounds.bottom - 20,
       radius: 15,
-      maxRadius: 340,
+      maxRadius: 360,
       color: '#00f5ff',
       alpha: 1.0
     });
 
     for (const o of this.orbs) {
       o.vy = -Math.random() * 260 - 220;
-      o.vx += (Math.random() - 0.5) * 280;
+      o.vx += (Math.random() - 0.5) * 260;
       o.triggerSquash(0.9);
+      o.overflowTime = 0;
     }
   }
 
-  /**
-   * Emergency Plasma Vent: Vaporizes up to 2 smallest orbs to relieve overflow pressure.
-   * @returns {number} Number of orbs vaporized
-   */
   triggerPlasmaVent() {
     if (this.orbs.length === 0) return 0;
     const sorted = [...this.orbs].sort((a, b) => a.tier - b.tier || a.y - b.y);
@@ -404,14 +410,11 @@ export class PhysicsWorld {
     return toRemove.length;
   }
 
-  /**
-   * Clears top overflowing orbs when reviving via Rewarded Ad Emergency Shield.
-   */
   clearTopOverflowOrbs() {
-    const thresholdY = this.bounds.dangerY + 95;
+    const thresholdY = this.bounds.dangerY + 90;
     const kept = [];
     for (const o of this.orbs) {
-      if (o.y - o.radius < thresholdY && this.orbs.length > 3) {
+      if (o.y - o.radius < thresholdY && this.orbs.length > 2) {
         this.spawnFusionParticles(o.x, o.y, '#00f5ff', 4);
       } else {
         o.overflowTime = 0;
@@ -463,7 +466,6 @@ export class PhysicsWorld {
   }
 
   _updateEffects(dt) {
-    // Non-linear cubic fade particles: alpha = (1 - age/life)^2
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       p.age += dt;
