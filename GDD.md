@@ -66,3 +66,19 @@ Rewarded Ad 1: Continuar partida (+30 segundos ou reviver com escudo). Rewarded 
 ## 🛡️ 6. Protocolo de Validação de Qualidade por 2 Subagentes (QA)
 - **Subagente 1 (Mecânica & Fluidez)**: Validação de 60 FPS constantes, física sem travamentos, movimentação precisa, colisão e conformidade com monitores de alta taxa de quadros (144Hz/165Hz).
 - **Subagente 2 (Jogabilidade & CrazyGames SDK)**: Validação de interface/HUD responsiva sem sobreposição, efeitos visuais nítidos, localização em inglês e conformidade total com os requisitos oficiais do CrazyGames SDK v3 (mute em ads, pause, land in gameplay).
+
+---
+
+## 📐 7. Diretrizes Arquiteturais de UI/HUD, Progressão de Estrelas e Anti-Freeze
+1. **Arquitetura 3-Row Flex Column (Zero Menus Sobrepostos & Zero "Tela Pequena")**:
+   - **Faixa 1 (`#hud-top-bar`)**: Header flex sólido no topo (fora da área do canvas) com status do setor, cronômetro, próximo orbe e barra de progresso de estrelas.
+   - **Faixa 2 (`#canvas-wrap`)**: Área central `flex: 1 1 auto` com redimensionamento dinâmico via `ResizeObserver` em pixels reais (sem `object-fit: contain` encolhendo a tela). Em modo Portrait/Mobile, a câmara de contenção ocupa mais de 92% da largura útil, perfeitamente alinhada com o HUD superior e inferior.
+   - **Faixa 3 (`#hud-bottom-bar`)**: Rodapé flex sólido ancorado abaixo da base do reator com os botões táticos (`Pulso [F]`, `Purgar [V]`, `Catalisador [C]`), jamais cobrindo o cenário do jogo.
+2. **Sistema Transparente de Passagem de Fase e 1, 2 e 3 Estrelas (`★`, `★★`, `★★★`)**:
+   - **Barra de Progresso de 3 Estrelas ao Vivo**: Exibe os marcos exatos de pontos de `★ 1 Estrela`, `★★ 2 Estrelas` e `★★★ 3 Estrelas` no topo da tela.
+   - **Regras Claras de Vitória**:
+     - Atingir a pontuação de **★ 1 Estrela** aprova o jogador no setor e libera imediatamente o botão verde `"✅ CONCLUIR FASE (★) ➔"` no topo (permitindo avançar na hora ou continuar jogando para `★★` e `★★★`).
+     - Fundir o **Núcleo Alvo** da fase ou atingir a pontuação de **★★★ 3 Estrelas** concede vitória máxima imediata!
+3. **Blindagem Anti-Freeze na Transição de Fases (`CrazyGames Ad Watchdog`)**:
+   - O disparo de `requestMidgameAd` a cada 3 fases verifica se o host suporta anúncios ativos e possui um Watchdog Timeout estrito de 2.5 segundos para garantir que `isAdPaused` seja sempre liberado e a transição para a 4ª fase nunca congele.
+

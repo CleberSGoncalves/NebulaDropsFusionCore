@@ -8,12 +8,14 @@
  * - Rewarded Ad 2: Double Plasma Shards / Bonus on sector victory
  * - Strictly NEVER grant reward on adError (AdBlock active)
  * - Midgame Ads: 180s cooldown, strictly on logical screens (victory / game over), never mid-gameplay
+ * - Includes strict 2.5s Watchdog Timeout & environment check so local/custom domains NEVER freeze after 3 levels
  */
 
 export class CrazyGamesBridge {
   constructor() {
     this.sdk = null;
     this.isInitialized = false;
+    this.isLiveCrazyGamesHost = false;
     this.hasAdblock = false;
     this.inGameplay = false;
     this.lastMidgameTime = performance.now();
@@ -33,6 +35,33 @@ export class CrazyGamesBridge {
   }
 
   /**
+   * Checks whether the SDK is running inside an active CrazyGames environment
+   * (either *.crazygames.* or local crazygames developer testing).
+   * @returns {boolean}
+   */
+  _canRequestLiveAds() {
+    if (!this.sdk || !this.sdk.ad || typeof this.sdk.ad.requestAd !== 'function') {
+      return false;
+    }
+    const env = this.sdk.environment;
+    if (env === 'disabled') {
+      return false;
+    }
+    if (typeof window !== 'undefined' && window.location) {
+      const host = (window.location.hostname || '').toLowerCase();
+      const isCgHost = host.includes('crazygames') || host.includes('1001juegos');
+      if (!isCgHost && env !== 'crazygames' && env !== 'local') {
+        return false;
+      }
+      // If running on custom domain or localhost without ?crazygames, SDK environment is 'disabled' or 'local'
+      if (!isCgHost && env === 'local' && !window.location.search.includes('crazygames')) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Initializes the CrazyGames SDK v3 asynchronously.
    * @returns {Promise<boolean>}
    */
@@ -43,17 +72,24 @@ export class CrazyGamesBridge {
       if (typeof window !== 'undefined' && window.CrazyGames && window.CrazyGames.SDK) {
         this.sdk = window.CrazyGames.SDK;
         if (typeof this.sdk.init === 'function') {
-          await this.sdk.init();
+          await Promise.race([
+            this.sdk.init(),
+            new Promise((resolve) => setTimeout(resolve, 2000))
+          ]);
         }
         if (this.sdk.ad && typeof this.sdk.ad.hasAdblock === 'function') {
           try {
-            this.hasAdblock = await this.sdk.ad.hasAdblock();
+            this.hasAdblock = await Promise.race([
+              this.sdk.ad.hasAdblock(),
+              new Promise((resolve) => setTimeout(() => resolve(false), 1200))
+            ]);
           } catch (_) {
             this.hasAdblock = false;
           }
         }
         this.isInitialized = true;
-        console.log('[CrazyGames] SDK v3 initialized successfully.');
+        this.isLiveCrazyGamesHost = this._canRequestLiveAds();
+        console.log(`[CrazyGames] SDK v3 initialized (env=${this.sdk.environment || 'unknown'}, liveAds=${this.isLiveCrazyGamesHost}).`);
         return true;
       } else {
         console.warn('[CrazyGames] SDK v3 not found on window (Fallback mode active).');
@@ -75,7 +111,7 @@ export class CrazyGamesBridge {
     if (this.inGameplay) return;
     this.inGameplay = true;
     try {
-      if (this.sdk && this.sdk.game && typeof this.sdk.game.gameplayStart === 'function') {
+      if (this.sdk && this.sdk.game && typeof this.sdk.game.gameplayStart === 'function' && this.sdk.environment !== 'disabled') {
         this.sdk.game.gameplayStart();
         console.log('[CrazyGames] gameplayStart() triggered.');
       }
@@ -91,7 +127,7 @@ export class CrazyGamesBridge {
     if (!this.inGameplay) return;
     this.inGameplay = false;
     try {
-      if (this.sdk && this.sdk.game && typeof this.sdk.game.gameplayStop === 'function') {
+      if (this.sdk && this.sdk.game && typeof this.sdk.game.gameplayStop === 'function' && this.sdk.environment !== 'disabled') {
         this.sdk.game.gameplayStop();
         console.log('[CrazyGames] gameplayStop() triggered.');
       }
@@ -105,10 +141,12 @@ export class CrazyGamesBridge {
    */
   happyTime() {
     try {
-      if (this.sdk && this.sdk.game && typeof this.sdk.game.happytime === 'function') {
-        this.sdk.game.happytime();
-      } else if (this.sdk && this.sdk.game && typeof this.sdk.game.happyTime === 'function') {
-        this.sdk.game.happyTime();
+      if (this.sdk && this.sdk.game && this.sdk.environment !== 'disabled') {
+        if (typeof this.sdk.game.happytime === 'function') {
+          this.sdk.game.happytime();
+        } else if (typeof this.sdk.game.happyTime === 'function') {
+          this.sdk.game.happyTime();
+        }
       }
     } catch (err) {
       console.debug('[CrazyGames] happyTime error:', err);
@@ -132,7 +170,16 @@ export class CrazyGamesBridge {
     if (this.onAdPauseCallback) this.onAdPauseCallback();
     this.gameplayStop();
 
-    if (this.sdk && this.sdk.ad && typeof this.sdk.ad.requestAd === 'function') {
+    if (this._canRequestLiveAds()) {
+      let settled = false;
+      const watchdog = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        console.warn('[CrazyGames] Rewarded Ad watchdog timeout -> Resuming game safely.');
+        if (this.onAdResumeCallback) this.onAdResumeCallback();
+        if (onError) onError('timeout');
+      }, 4000);
+
       try {
         await this.sdk.ad.requestAd('rewarded', {
           adStarted: () => {
@@ -140,30 +187,40 @@ export class CrazyGamesBridge {
             if (this.onAdPauseCallback) this.onAdPauseCallback();
           },
           adFinished: () => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(watchdog);
             console.log('[CrazyGames] Rewarded Ad finished -> Restoring audio & granting reward.');
             if (this.onAdResumeCallback) this.onAdResumeCallback();
             if (onRewarded) onRewarded();
           },
           adError: (err) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(watchdog);
             console.warn('[CrazyGames] Rewarded Ad error / AdBlock -> NO reward granted:', err);
             if (this.onAdResumeCallback) this.onAdResumeCallback();
             if (onError) onError(err);
           }
         });
       } catch (err) {
-        console.warn('[CrazyGames] Exception during Rewarded Ad -> NO reward granted:', err);
-        if (this.onAdResumeCallback) this.onAdResumeCallback();
-        if (onError) onError(err);
+        if (!settled) {
+          settled = true;
+          clearTimeout(watchdog);
+          console.warn('[CrazyGames] Exception during Rewarded Ad -> NO reward granted:', err);
+          if (this.onAdResumeCallback) this.onAdResumeCallback();
+          if (onError) onError(err);
+        }
       }
     } else {
-      // If AdBlock blocked the SDK entirely, do not grant reward if hasAdblock is flagged
+      // If AdBlock blocked the SDK on a live host, do not grant reward
       if (this.hasAdblock) {
         if (this.onAdResumeCallback) this.onAdResumeCallback();
         if (onError) onError('adblock_detected');
         return;
       }
-      // Local dev simulation
-      console.log('[CrazyGames Local Dev] Simulating Rewarded Ad completion.');
+      // Local / standalone environment simulation
+      console.log('[CrazyGames Standalone] Simulating Rewarded Ad completion.');
       if (this.onAdResumeCallback) this.onAdResumeCallback();
       if (onRewarded) onRewarded();
     }
@@ -171,7 +228,7 @@ export class CrazyGamesBridge {
 
   /**
    * Requests a Midgame Ad during logical transitions (Victory / Game Over).
-   * Enforces a 180-second minimum cooldown.
+   * Enforces a 180-second minimum cooldown and a strict 2.5s watchdog so the game NEVER freezes after 3 levels!
    * @param {() => void} [onComplete]
    */
   async requestMidgameAd(onComplete) {
@@ -184,36 +241,47 @@ export class CrazyGamesBridge {
       return;
     }
 
+    // Reset counters immediately so even if an ad is skipped or errors, it won't re-trigger on every click
+    this.lastMidgameTime = now;
+    this.levelsCompletedSinceLastAd = 0;
+
+    if (!this._canRequestLiveAds()) {
+      if (this.onAdResumeCallback) this.onAdResumeCallback();
+      if (onComplete) onComplete();
+      return;
+    }
+
     if (this.onAdPauseCallback) this.onAdPauseCallback();
     this.gameplayStop();
 
-    if (this.sdk && this.sdk.ad && typeof this.sdk.ad.requestAd === 'function') {
-      try {
-        await this.sdk.ad.requestAd('midgame', {
-          adStarted: () => {
-            if (this.onAdPauseCallback) this.onAdPauseCallback();
-          },
-          adFinished: () => {
-            this.lastMidgameTime = performance.now();
-            this.levelsCompletedSinceLastAd = 0;
-            if (this.onAdResumeCallback) this.onAdResumeCallback();
-            if (onComplete) onComplete();
-          },
-          adError: () => {
-            this.lastMidgameTime = performance.now();
-            if (this.onAdResumeCallback) this.onAdResumeCallback();
-            if (onComplete) onComplete();
-          }
-        });
-      } catch (_) {
-        if (this.onAdResumeCallback) this.onAdResumeCallback();
-        if (onComplete) onComplete();
-      }
-    } else {
-      this.lastMidgameTime = performance.now();
-      this.levelsCompletedSinceLastAd = 0;
+    let settled = false;
+    const finishSafely = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(watchdog);
       if (this.onAdResumeCallback) this.onAdResumeCallback();
       if (onComplete) onComplete();
+    };
+
+    const watchdog = setTimeout(() => {
+      console.warn('[CrazyGames] Midgame Ad watchdog timeout (2.5s) -> Proceeding to next sector.');
+      finishSafely();
+    }, 2500);
+
+    try {
+      await this.sdk.ad.requestAd('midgame', {
+        adStarted: () => {
+          if (this.onAdPauseCallback) this.onAdPauseCallback();
+        },
+        adFinished: () => {
+          finishSafely();
+        },
+        adError: () => {
+          finishSafely();
+        }
+      });
+    } catch (_) {
+      finishSafely();
     }
   }
 

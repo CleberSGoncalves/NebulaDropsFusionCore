@@ -1,9 +1,9 @@
 /**
  * @fileoverview Stylesheet for Nebula Drops: Fusion Core
- * Mobile-First Responsive Design:
- * - Clean portrait & landscape adaptations
- * - Docked non-overlapping bottom tactical toolbar
- * - Full-screen viewport, zero scrollbars, and touch hit areas >= 44-48px
+ * Architectural Guarantee (3-Row Non-Overlapping Flex Layout):
+ * - Row 1 (.hud-top-bar): Solid flex header (flex: 0 0 auto) — NEVER covers the gameplay canvas
+ * - Row 2 (.canvas-wrap): Full-bleed flex-grow canvas container (flex: 1 1 auto) — ZERO "small screen" letterboxing
+ * - Row 3 (.hud-bottom-bar): Solid flex footer (flex: 0 0 auto) — Docked below the reactor floor
  */
 
 * {
@@ -20,6 +20,7 @@ body,
 #app {
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background: #02050e;
   font-family: 'Montserrat', sans-serif;
@@ -29,43 +30,28 @@ body,
 
 #game-stage {
   position: relative;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
   overflow: hidden;
   background: radial-gradient(circle at 50% 50%, #08152e 0%, #02050e 100%);
 }
 
-#game-canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-  max-width: 100vw;
-  max-height: 100vh;
-  object-fit: contain;
-}
-
-/* ── HUD Overlay ─────────────────────────────────────────────────────────── */
-#hud-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 20;
-}
-
-/* ── Top Status Bar ──────────────────────────────────────────────────────── */
+/* ── ROW 1: Solid Flex Header (.hud-top-bar) ─────────────────────────────── */
 .hud-top-bar {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 8px;
+  flex: 0 0 auto;
+  width: 100%;
+  padding: 6px 10px;
+  background: linear-gradient(180deg, rgba(4, 10, 24, 0.98) 0%, rgba(7, 16, 36, 0.94) 100%);
+  border-bottom: 1.5px solid rgba(0, 245, 255, 0.32);
   display: flex;
   flex-direction: column;
   gap: 5px;
-  pointer-events: none;
-  z-index: 40;
+  z-index: 30;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.65);
 }
 
 .hud-top-row {
@@ -73,50 +59,163 @@ body,
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  pointer-events: auto;
+  flex-wrap: nowrap;
+}
+
+.hud-left-cluster {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .hud-btn-cluster {
   display: flex;
   align-items: center;
   gap: 5px;
+  flex-shrink: 0;
 }
 
-.hud-sub-row {
+/* ── Second Row in Header: 3-Star Progress Bar & Goal Core ───────────────── */
+.hud-mission-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 8px;
-  pointer-events: auto;
+  width: 100%;
+}
+
+.hud-star-bar-container {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: rgba(11, 22, 46, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+
+.hud-star-header-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.hud-score-text {
+  font-size: 11px;
+  font-weight: 900;
+  color: #00f5ff;
+  white-space: nowrap;
+}
+
+.hud-star-milestones {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.hud-star-badge {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #64748b;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.hud-star-badge.earned {
+  color: #020617;
+  background: linear-gradient(135deg, #fde047, #facc15);
+  border-color: #fef08a;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.65);
+  transform: scale(1.04);
+}
+
+.hud-star-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(2, 6, 23, 0.85);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.hud-star-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #0284c7 0%, #00f5ff 55%, #facc15 100%);
+  box-shadow: 0 0 8px rgba(0, 245, 255, 0.8);
+  transition: width 0.2s ease-out;
+}
+
+.hud-goal-right-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.hud-complete-sector-btn {
+  min-height: 30px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #16a34a, #4ade80);
+  border: 1.5px solid #bbf7d0;
+  border-radius: 8px;
+  color: #022c22;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 0 14px rgba(74, 222, 128, 0.6);
+  animation: pulseWinBtn 0.9s infinite alternate;
+}
+
+@keyframes pulseWinBtn {
+  from {
+    transform: scale(0.98);
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.45);
+  }
+  to {
+    transform: scale(1.03);
+    box-shadow: 0 0 18px rgba(74, 222, 128, 0.85);
+  }
 }
 
 .hud-pill {
-  min-height: 34px;
-  padding: 4px 10px;
-  background: rgba(8, 17, 36, 0.88);
+  min-height: 32px;
+  padding: 3px 9px;
+  background: rgba(8, 17, 36, 0.92);
   border: 1px solid rgba(56, 189, 248, 0.35);
   border-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
+  gap: 5px;
+  font-size: 11px;
   font-weight: 800;
   color: #e2e8f0;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   white-space: nowrap;
 }
 
 .hud-pill-compact {
   min-height: 30px;
-  padding: 3px 10px;
-  font-size: 11px;
+  padding: 3px 8px;
+  font-size: 10.5px;
 }
 
 .hud-pill-cyan {
   border-color: #00f5ff;
   color: #00f5ff;
-  text-shadow: 0 0 8px rgba(0, 245, 255, 0.5);
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.45);
 }
 
 .hud-target-pill {
@@ -125,16 +224,17 @@ body,
 }
 
 .hud-orb-dot {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   display: inline-block;
   border: 1.5px solid #ffffff;
+  flex-shrink: 0;
 }
 
 .hud-icon-btn {
-  min-width: 36px;
-  height: 34px;
+  min-width: 34px;
+  height: 32px;
   padding: 0 8px;
   background: rgba(12, 23, 46, 0.92);
   border: 1.5px solid rgba(0, 245, 255, 0.45);
@@ -152,7 +252,6 @@ body,
 
 .hud-icon-btn:hover {
   background: rgba(0, 245, 255, 0.22);
-  transform: translateY(-1px);
 }
 
 .hud-icon-btn:active {
@@ -160,35 +259,52 @@ body,
 }
 
 .hud-btn-accent {
-  background: rgba(2, 132, 199, 0.4);
+  background: rgba(2, 132, 199, 0.42);
   border-color: #38bdf8;
   color: #bae6fd;
 }
 
-/* ── Danger Countdown Banner ─────────────────────────────────────────────── */
+/* ── ROW 2: Middle Full-Bleed Canvas Container (.canvas-wrap) ────────────── */
+.canvas-wrap {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Danger Countdown Banner (Inside top of .canvas-wrap) ────────────────── */
 .hud-danger-banner {
   position: absolute;
-  top: 78px;
+  top: 8px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 6px 18px;
-  background: rgba(220, 38, 38, 0.92);
+  padding: 5px 16px;
+  background: rgba(220, 38, 38, 0.94);
   border: 1.5px solid #fca5a5;
   border-radius: 999px;
   color: #ffffff;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 900;
-  letter-spacing: 0.8px;
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
+  letter-spacing: 0.7px;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.85);
   animation: pulseDanger 0.6s infinite alternate;
-  z-index: 35;
+  z-index: 25;
   white-space: nowrap;
+  pointer-events: none;
 }
 
 .hud-shield-banner {
-  background: rgba(2, 132, 199, 0.92);
+  background: rgba(2, 132, 199, 0.94);
   border-color: #00f5ff;
-  box-shadow: 0 0 20px rgba(0, 245, 255, 0.8);
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.85);
 }
 
 .hidden {
@@ -198,7 +314,7 @@ body,
 @keyframes pulseDanger {
   from {
     transform: translateX(-50%) scale(0.97);
-    opacity: 0.85;
+    opacity: 0.88;
   }
   to {
     transform: translateX(-50%) scale(1.03);
@@ -206,41 +322,41 @@ body,
   }
 }
 
-/* ── Bottom Docked Tactical Toolbar (NEVER BLOCKS THE VESSEL) ─────────────── */
+/* ── ROW 3: Solid Flex Footer (.hud-bottom-bar) ──────────────────────────── */
 .hud-bottom-bar {
-  position: absolute;
-  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-  left: 10px;
-  right: 10px;
+  flex: 0 0 auto;
+  width: 100%;
+  padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(0deg, rgba(4, 10, 24, 0.98) 0%, rgba(7, 16, 36, 0.94) 100%);
+  border-top: 1.5px solid rgba(56, 189, 248, 0.32);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  pointer-events: auto;
-  z-index: 50;
+  z-index: 30;
 }
 
 .hud-action-btn {
-  min-height: 42px;
-  padding: 6px 14px;
-  background: rgba(10, 20, 42, 0.92);
+  flex: 1 1 0;
+  max-width: 210px;
+  min-height: 40px;
+  padding: 6px 10px;
+  background: rgba(10, 20, 42, 0.95);
   border: 1.5px solid rgba(56, 189, 248, 0.55);
   border-radius: 10px;
   color: #38bdf8;
   font-family: 'Montserrat', sans-serif;
   font-weight: 800;
   font-size: 11px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   cursor: pointer;
   transition: all 0.15s;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
   white-space: nowrap;
-  backdrop-filter: blur(6px);
 }
 
 .hud-action-btn:hover {
   background: rgba(56, 189, 248, 0.18);
-  transform: translateY(-1px);
 }
 
 .hud-action-btn:active {
@@ -280,10 +396,10 @@ body,
   background: linear-gradient(180deg, #0b1730 0%, #050b18 100%);
   border: 1.5px solid rgba(0, 245, 255, 0.45);
   border-radius: 18px;
-  padding: 22px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 11px;
   text-align: center;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(0, 245, 255, 0.15);
 }
@@ -299,10 +415,10 @@ body,
 }
 
 .hud-modal-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 900;
   color: #00f5ff;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.6px;
 }
 
 .hud-title-gold {
@@ -316,9 +432,23 @@ body,
 }
 
 .hud-modal-sub {
-  font-size: 12.5px;
-  color: #94a3b8;
+  font-size: 12px;
+  color: #cbd5e1;
   font-weight: 600;
+}
+
+.hud-star-guide-box {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(250, 204, 21, 0.4);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #e2e8f0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .hud-victory-stars {
@@ -329,7 +459,7 @@ body,
 }
 
 .hud-shard-reward {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   color: #38bdf8;
   padding: 8px;
@@ -344,7 +474,7 @@ body,
 }
 
 .hud-modal-btn {
-  min-height: 46px;
+  min-height: 44px;
   padding: 10px 16px;
   border-radius: 10px;
   font-family: 'Montserrat', sans-serif;
@@ -409,7 +539,7 @@ body,
 
 .hud-sector-thumb {
   width: 100%;
-  height: 68px;
+  height: 62px;
   border-radius: 8px;
   border: 1.5px solid #00f5ff;
   display: flex;
@@ -418,8 +548,8 @@ body,
 }
 
 .hud-sector-orb-preview {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 2px solid #ffffff;
   display: flex;
@@ -431,14 +561,15 @@ body,
 }
 
 .hud-sector-name {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 800;
   color: #f8fafc;
 }
 
 .hud-sector-meta {
-  font-size: 10.5px;
-  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.35;
+  color: #cbd5e1;
 }
 
 .hud-sector-stars {
@@ -449,7 +580,7 @@ body,
 
 .hud-sector-btn {
   width: 100%;
-  min-height: 38px;
+  min-height: 36px;
   border-radius: 8px;
   border: 1px solid #475569;
   background: #1e293b;
@@ -466,29 +597,35 @@ body,
   color: #020617;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .hud-level-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   .hud-top-bar {
-    top: 6px;
-    left: 6px;
-    right: 6px;
+    padding: 5px 6px;
+    gap: 4px;
   }
   .hud-pill {
-    padding: 3px 8px;
-    font-size: 10.5px;
-    min-height: 30px;
+    padding: 2px 6px;
+    font-size: 10px;
+    min-height: 28px;
   }
   .hud-icon-btn {
-    min-width: 32px;
-    height: 30px;
+    min-width: 28px;
+    height: 28px;
+    font-size: 9.5px;
+    padding: 0 5px;
+  }
+  .hud-star-badge {
+    font-size: 9.5px;
+    padding: 1px 4px;
+  }
+  .hud-score-text {
     font-size: 10px;
-    padding: 0 6px;
   }
   .hud-action-btn {
-    min-height: 38px;
-    padding: 5px 10px;
-    font-size: 10.5px;
+    min-height: 36px;
+    padding: 4px 6px;
+    font-size: 10px;
   }
 }

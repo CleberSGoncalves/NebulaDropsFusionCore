@@ -18,7 +18,7 @@ export const TRANSLATIONS = {
     loreAct2Title: 'ACT II — UNSTABLE LIQUID PLASMA',
     loreAct2Text: 'Volatile Nebula Drops are pouring into the magnetic containment vessel. If the plasma orbs overflow past the critical red laser threshold, the reactor will detonate.',
     loreAct3Title: 'ACT III — SYNTHESIZE THE FUSION CORE',
-    loreAct3Text: 'Collide identical plasma drops to fuse them into denser, higher-tier nuclei. Reach the target fusion state and stabilize all 12 Reactor Sectors before time runs out!',
+    loreAct3Text: 'Collide identical plasma drops to fuse them into denser, higher-tier nuclei. Reach 1★ Score or synthesize the Goal Core to pass each Sector, or push to 3★ for maximum mastery!',
 
     // HUD & Gameplay
     sector: 'SECTOR',
@@ -29,13 +29,17 @@ export const TRANSLATIONS = {
     nextOrb: 'NEXT',
     time: 'TIME',
     targetTier: 'GOAL CORE',
+    howToPassLabel: 'HOW TO PASS',
+    howToPassDesc: 'Reach ★1 Score OR fuse the Goal Core',
+    completeSectorNow: '✅ FINISH SECTOR',
+    keepPlayingFor3Stars: 'Keep merging for ★★★ or finish now!',
     dangerWarning: '⚠️ OVERFLOW WARNING!',
     meltdownIn: 'MELTDOWN IN',
     shieldActive: 'CONTAINMENT SHIELD ACTIVE',
     combo: 'FUSION COMBO',
     dropHintDesktop: 'MOUSE / A-D: Aim  •  CLICK / SPACE: Drop  •  [F] Pulse  [V] Vent  [C] Catalyst',
     dropHintMobile: 'DRAG to aim  •  TAP to drop  •  Merge matching orbs!',
-    gameLogicTip: '🎯 HOW TO PLAY: Drop orbs! Collide 2 matching cores (H+ + H+ = He) to fuse bigger cores and score points!',
+    gameLogicTip: '🎯 Match 2 identical orbs (H+ + H+ ➔ He) to evolve! Reach ★1 pts or fuse the Goal Core to win!',
     btnEvoGuide: 'CHAIN [?]',
 
     // Tactical Abilities
@@ -57,11 +61,11 @@ export const TRANSLATIONS = {
 
     // Level Select (Rule 10 Visual Cards)
     selectSectorTitle: 'SELECT REACTOR SECTOR',
-    selectSectorSub: 'Synthesize target plasma cores and earn 3 Stars to unlock deeper containment chambers.',
+    selectSectorSub: 'HOW STARS WORK: ★1 = Pass Quota  •  ★★2 = High Score  •  ★★★3 = Master Score or Goal Core!',
     launchSector: 'LAUNCH',
     lockedSector: 'LOCKED',
-    goalScore: 'Score Quota',
-    goalTier: 'Synthesize',
+    goalScore: '1★ Quota',
+    goalTier: 'Goal Core',
 
     // Victory Modal
     victoryTitle: 'SECTOR STABILIZED!',
@@ -70,11 +74,12 @@ export const TRANSLATIONS = {
     doubleRewardBtn: '[VIDEO] 2X PLASMA SHARDS & BONUS',
     rewardClaimed: '2X BONUS CLAIMED!',
     nextSectorBtn: 'NEXT SECTOR ➔',
+    starBreakdownTitle: 'SECTOR STAR RATING THRESHOLDS',
 
     // Game Over Modal
     meltdownTitle: 'REACTOR MELTDOWN!',
     meltdownOverflow: 'Liquid plasma overflowed the magnetic containment barrier for too long!',
-    meltdownTimeout: 'Critical time limit expired before core stabilization!',
+    meltdownTimeout: 'Critical time limit expired before reaching the 1★ score quota!',
     reviveBtn: '[VIDEO] EMERGENCY SHIELD (+30s & CLEAR TOP)',
     retryBtn: 'RETRY SECTOR',
     adErrorMsg: 'Ad could not be loaded (AdBlock or network). Reward not granted.',
@@ -96,8 +101,8 @@ export const TRANSLATIONS = {
 
     // Evolution Modal
     evolutionChain: 'FUSION EVOLUTION CHAIN',
-    evolutionModalTitle: 'CORE EVOLUTION CHAIN',
-    evolutionModalSub: 'Merge two identical cores to synthesize the next tier:'
+    evolutionModalTitle: 'CORE EVOLUTION & STAR GUIDE',
+    evolutionModalSub: 'Merge 2 identical cores to evolve to the next tier and earn points toward ★, ★★, and ★★★:'
   },
 
   pt: {
@@ -113,7 +118,7 @@ export const TRANSLATIONS = {
     loreAct2Title: 'ATO II — PLASMA LÍQUIDO INSTÁVEL',
     loreAct2Text: 'Núcleos de energia líquida caem na câmara de contenção magnética. Se os orbes transbordarem além do laser vermelho de perigo, o reator entrará em colapso.',
     loreAct3Title: 'ATO III — SINTETIZE O NÚCLEO SUPREMO',
-    loreAct3Text: 'Colida orbes de mesmo nível para fundi-los em núcleos superiores. Alcance a meta de fusão e estabilize os 12 Setores do Reator antes que o tempo esgote!',
+    loreAct3Text: 'Colida orbes de mesmo nível para fundi-los em núcleos superiores. Alcance ★1 Ponto ou sintetize o Núcleo Alvo para passar de fase, ou busque ★★★3 Estrelas!',
 
     // HUD & Gameplay
     sector: 'SETOR',
@@ -124,14 +129,18 @@ export const TRANSLATIONS = {
     nextOrb: 'PRÓXIMO',
     time: 'TEMPO',
     targetTier: 'NÚCLEO ALVO',
+    howToPassLabel: 'COMO PASSAR',
+    howToPassDesc: 'Atingir pontos de ★1 OU fundir o Núcleo Alvo',
+    completeSectorNow: '✅ CONCLUIR FASE',
+    keepPlayingFor3Stars: 'Continue para ★★★ ou conclua agora!',
     dangerWarning: '⚠️ PERIGO DE TRANSBORDO!',
     meltdownIn: 'COLAPSO EM',
     shieldActive: 'ESCUDO DE CONTENÇÃO ATIVO',
     combo: 'COMBO DE FUSÃO',
     dropHintDesktop: 'MOUSE / A-D: Mirar  •  CLIQUE / ESPAÇO: Soltar  •  [F] Pulso  [V] Purgar  [C] Catalisador',
     dropHintMobile: 'ARRASTE para mirar  •  TOQUE para soltar  •  Funda orbes iguais!',
-    gameLogicTip: '🎯 COMO JOGAR: Solte orbes! Colida 2 núcleos iguais (H+ + H+ = He) para fundir orbes maiores e pontuar!',
-    btnEvoGuide: 'CADEIA [?]',
+    gameLogicTip: '🎯 Junte 2 orbes iguais (H+ + H+ ➔ He)! Atingindo ★1 ponto ou criando o Núcleo Alvo você passa de fase!',
+    btnEvoGuide: 'GUIA [?]',
 
     // Tactical Abilities
     btnDrop: 'SOLTAR',
@@ -152,11 +161,11 @@ export const TRANSLATIONS = {
 
     // Level Select
     selectSectorTitle: 'SELECIONE O SETOR DO REATOR',
-    selectSectorSub: 'Funda os núcleos de plasma alvo e conquiste 3 Estrelas para desbloquear novas câmaras.',
+    selectSectorSub: 'COMO GANHAR ESTRELAS: ★1 = Meta Básica  •  ★★2 = Pontuação Alta  •  ★★★3 = Pontuação Máxima!',
     launchSector: 'INICIAR',
     lockedSector: 'BLOQUEADO',
-    goalScore: 'Meta de Pontos',
-    goalTier: 'Fundir',
+    goalScore: 'Meta ★1',
+    goalTier: 'Núcleo Alvo',
 
     // Victory Modal
     victoryTitle: 'SETOR ESTABILIZADO!',
@@ -165,11 +174,12 @@ export const TRANSLATIONS = {
     doubleRewardBtn: '[VÍDEO] 2X FRAGMENTOS & BÔNUS',
     rewardClaimed: 'BÔNUS 2X RESGATADO!',
     nextSectorBtn: 'PRÓXIMO SETOR ➔',
+    starBreakdownTitle: 'METAS DE ESTRELAS DESTA FASE',
 
     // Game Over Modal
     meltdownTitle: 'COLAPSO DO REATOR!',
     meltdownOverflow: 'O plasma líquido transbordou a barreira por muito tempo!',
-    meltdownTimeout: 'O tempo crítico esgotou antes da estabilização do núcleo!',
+    meltdownTimeout: 'O tempo crítico esgotou antes de atingir a meta de ★1 estrela!',
     reviveBtn: '[VÍDEO] ESCUDO DE EMERGÊNCIA (+30s & LIMPAR TOPO)',
     retryBtn: 'TENTAR NOVAMENTE',
     adErrorMsg: 'Anúncio bloqueado ou indisponível (AdBlock). Recompensa não concedida.',
@@ -191,8 +201,8 @@ export const TRANSLATIONS = {
 
     // Evolution Modal
     evolutionChain: 'CADEIA DE EVOLUÇÃO DE FUSÃO',
-    evolutionModalTitle: 'CADEIA DE EVOLUÇÃO DOS NÚCLEOS',
-    evolutionModalSub: 'Funda dois núcleos idênticos para sintetizar o próximo elemento:'
+    evolutionModalTitle: 'GUIA DE EVOLUÇÃO E ESTRELAS',
+    evolutionModalSub: 'Funda 2 núcleos idênticos para criar o próximo nível e ganhar pontos para ★, ★★ e ★★★:'
   }
 };
 
@@ -203,6 +213,8 @@ class I18nManager {
       const savedLang = localStorage.getItem('nebula_drops_lang');
       if (savedLang === 'en' || savedLang === 'pt') {
         this.lang = savedLang;
+      } else if (typeof navigator !== 'undefined' && navigator.language && navigator.language.toLowerCase().startsWith('pt')) {
+        this.lang = 'pt';
       }
     } catch (_) {
       this.lang = 'en';

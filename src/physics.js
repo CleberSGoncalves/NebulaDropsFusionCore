@@ -5,6 +5,7 @@
  * - Multi-iteration Impulse + Positional Correction Circle Solver (prevents tunneling and jitter)
  * - Infinite upward side walls (prevents orbs from popping over container edges)
  * - Settled-only Danger Line overflow tracking with 5.0s grace period & countdown
+ * - Responsive orbScale & dynamic bounds clamping on viewport resize
  * - Squash & Stretch spring-damped oscillator per orb
  * - Camera Shake with Trauma² exponential decay & Hit-Stop impact freeze
  */
@@ -48,13 +49,14 @@ export class CameraShaker {
 }
 
 export class PlasmaOrb {
-  constructor(id, tier, x, y, isCatalyst = false) {
+  constructor(id, tier, x, y, isCatalyst = false, orbScale = 1.0) {
     this.id = id;
     this.tier = Math.max(1, Math.min(ORB_TIERS.length, tier));
     this.isCatalyst = Boolean(isCatalyst);
 
     const cfg = ORB_TIERS[this.tier - 1];
-    this.radius = cfg.radius;
+    this.baseRadius = cfg.radius;
+    this.radius = Math.max(12, Math.round(cfg.radius * orbScale));
     this.mass = cfg.mass;
     this.invMass = 1 / cfg.mass;
     this.color = cfg.color;
@@ -116,6 +118,7 @@ export class PhysicsWorld {
       bottom: 490,
       dangerY: 135
     };
+    this.orbScale = 1.0;
     this.gravity = 700;
     this.restitution = 0.35;
     this.wallFriction = 0.985;
@@ -134,8 +137,24 @@ export class PhysicsWorld {
     this.onMeltdown = callbacks.onMeltdown || null;
   }
 
-  setBounds(newBounds) {
+  setBounds(newBounds, newOrbScale = 1.0) {
+    const oldBounds = this.bounds;
+    const oldW = Math.max(1, oldBounds.right - oldBounds.left);
+    const newW = Math.max(1, newBounds.right - newBounds.left);
+
     this.bounds = { ...newBounds };
+    this.orbScale = newOrbScale;
+
+    // Remap and clamp existing orbs smoothly inside the updated reactor bounds
+    for (const o of this.orbs) {
+      o.radius = Math.max(12, Math.round(o.baseRadius * this.orbScale));
+      const relX = (o.x - oldBounds.left) / oldW;
+      const mappedX = this.bounds.left + relX * newW;
+      o.x = Math.max(this.bounds.left + o.radius + 1, Math.min(this.bounds.right - o.radius - 1, mappedX));
+      if (o.y + o.radius > this.bounds.bottom) {
+        o.y = this.bounds.bottom - o.radius;
+      }
+    }
   }
 
   clear() {
@@ -149,11 +168,12 @@ export class PhysicsWorld {
 
   spawnOrb(tier, x, y, isCatalyst = false) {
     const cfg = ORB_TIERS[Math.max(0, Math.min(ORB_TIERS.length - 1, tier - 1))];
+    const scaledR = Math.max(12, Math.round(cfg.radius * this.orbScale));
     const clampedX = Math.max(
-      this.bounds.left + cfg.radius + 2,
-      Math.min(this.bounds.right - cfg.radius - 2, x)
+      this.bounds.left + scaledR + 2,
+      Math.min(this.bounds.right - scaledR - 2, x)
     );
-    const orb = new PlasmaOrb(this.nextOrbId++, tier, clampedX, y, isCatalyst);
+    const orb = new PlasmaOrb(this.nextOrbId++, tier, clampedX, y, isCatalyst, this.orbScale);
     this.orbs.push(orb);
     return orb;
   }

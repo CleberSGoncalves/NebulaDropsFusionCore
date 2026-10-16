@@ -1,6 +1,6 @@
 /**
  * @fileoverview Main Entry Point for Nebula Drops: Fusion Core
- * Bootstraps CrazyGames SDK v3, Sound Synthesizer, Responsive HUD,
+ * Bootstraps CrazyGames SDK v3, Sound Synthesizer, Responsive 3-Row Flex HUD,
  * FluidCleb Interactive Splash (0.0s - 2.8s) + Interactive Lore, and Game Engine.
  */
 
@@ -14,7 +14,7 @@ import { CinematicIntro } from './splash.js';
 window.addEventListener('DOMContentLoaded', async () => {
   console.log('[Main] Bootstrapping Nebula Drops: Fusion Core...');
 
-  // 1. Initialize CrazyGames SDK v3 asynchronously (resilient to AdBlock)
+  // 1. Initialize CrazyGames SDK v3 asynchronously (resilient to AdBlock & non-CG domains)
   await crazyGames.init();
 
   const canvas = document.getElementById('game-canvas');
@@ -22,7 +22,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   let engine = null;
 
-  // 2. Instantiate decoupled HUD
+  // 2. Instantiate decoupled 3-Row Flex HUD
   const hud = new GameHUD(stage, {
     onPause: () => {
       if (engine) engine.isPaused = true;
@@ -30,6 +30,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     onResume: () => {
       if (engine) {
         engine.isPaused = false;
+        engine.isAdPaused = false;
         crazyGames.gameplayStart();
       }
     },
@@ -51,6 +52,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     onStartEndless: () => {
       if (engine) {
         engine.loadSector(0, true);
+      }
+    },
+    onCompleteSectorEarly: () => {
+      if (engine) {
+        engine.completeSectorIfEligible();
       }
     },
     onDropOrb: () => {
