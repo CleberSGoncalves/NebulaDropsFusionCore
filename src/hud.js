@@ -62,6 +62,13 @@ export class GameHUD {
     this.timerValue.textContent = '02:30';
     this.timerBox.appendChild(this.timerValue);
 
+    leftCluster.appendChild(this.sectorBadge);
+    leftCluster.appendChild(this.timerBox);
+
+    // Center Cluster: Next Orb Pill (Dedicated center position, zero crowding!)
+    const centerCluster = document.createElement('div');
+    centerCluster.className = 'hud-center-cluster';
+
     this.nextOrbPill = document.createElement('div');
     this.nextOrbPill.className = 'hud-pill hud-pill-compact';
     this.nextOrbLabel = document.createElement('span');
@@ -73,17 +80,15 @@ export class GameHUD {
     this.nextOrbPill.appendChild(this.nextOrbLabel);
     this.nextOrbPill.appendChild(this.nextOrbDot);
     this.nextOrbPill.appendChild(this.nextOrbSymbol);
+    centerCluster.appendChild(this.nextOrbPill);
 
-    leftCluster.appendChild(this.sectorBadge);
-    leftCluster.appendChild(this.timerBox);
-    leftCluster.appendChild(this.nextOrbPill);
-
-    // Utility button cluster
+    // Utility button cluster (Right)
     const btnCluster = document.createElement('div');
     btnCluster.className = 'hud-btn-cluster';
 
+    // Desktop-only secondary quick actions
     this.btnMode = document.createElement('button');
-    this.btnMode.className = 'hud-mode-btn';
+    this.btnMode.className = 'hud-mode-btn hud-desktop-only';
     this.btnMode.title = 'Switch Mode';
     this.btnMode.textContent = i18n.t('modeNormal');
     this.btnMode.addEventListener('pointerdown', (e) => {
@@ -96,7 +101,7 @@ export class GameHUD {
     });
 
     this.btnDaily = document.createElement('button');
-    this.btnDaily.className = 'hud-icon-btn hud-btn-amber';
+    this.btnDaily.className = 'hud-icon-btn hud-btn-amber hud-desktop-only';
     this.btnDaily.title = 'Daily Login Rewards';
     this.btnDaily.textContent = '🎁';
     this.btnDaily.addEventListener('pointerdown', (e) => {
@@ -105,7 +110,7 @@ export class GameHUD {
     });
 
     this.btnShop = document.createElement('button');
-    this.btnShop.className = 'hud-icon-btn hud-btn-purple';
+    this.btnShop.className = 'hud-icon-btn hud-btn-purple hud-desktop-only';
     this.btnShop.title = 'Cosmetic Skins Shop';
     this.btnShop.textContent = '🎨';
     this.btnShop.addEventListener('pointerdown', (e) => {
@@ -114,7 +119,7 @@ export class GameHUD {
     });
 
     this.btnAchievements = document.createElement('button');
-    this.btnAchievements.className = 'hud-icon-btn hud-btn-emerald';
+    this.btnAchievements.className = 'hud-icon-btn hud-btn-emerald hud-desktop-only';
     this.btnAchievements.title = 'Achievements Vault';
     this.btnAchievements.textContent = '🏆';
     this.btnAchievements.addEventListener('pointerdown', (e) => {
@@ -122,10 +127,11 @@ export class GameHUD {
       this.openAchievementsModal();
     });
 
+    // Always-visible quick controls (compact, uniform 32px square icons)
     this.btnEvo = document.createElement('button');
     this.btnEvo.className = 'hud-icon-btn hud-btn-accent';
-    this.btnEvo.title = 'Evolution & Star Guide';
-    this.btnEvo.textContent = i18n.t('btnEvoGuide');
+    this.btnEvo.title = 'Evolution & Fusion Guide';
+    this.btnEvo.textContent = '📖';
     this.btnEvo.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
       this.openEvolutionModal();
@@ -142,6 +148,7 @@ export class GameHUD {
 
     this.btnLang = document.createElement('button');
     this.btnLang.className = 'hud-icon-btn';
+    this.btnLang.title = 'Toggle Language (EN / PT)';
     this.btnLang.textContent = i18n.lang.toUpperCase();
     this.btnLang.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
@@ -161,8 +168,9 @@ export class GameHUD {
     });
 
     this.btnPause = document.createElement('button');
-    this.btnPause.className = 'hud-icon-btn';
-    this.btnPause.textContent = 'II';
+    this.btnPause.className = 'hud-icon-btn hud-btn-menu';
+    this.btnPause.title = 'Command Center / Pause';
+    this.btnPause.textContent = '⚙️';
     this.btnPause.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
       this.openPauseModal();
@@ -179,6 +187,7 @@ export class GameHUD {
     btnCluster.appendChild(this.btnPause);
 
     this.topRow.appendChild(leftCluster);
+    this.topRow.appendChild(centerCluster);
     this.topRow.appendChild(btnCluster);
     this.topBar.appendChild(this.topRow);
 
@@ -349,20 +358,21 @@ export class GameHUD {
     if (!this.btnMode) return;
     if (this.currentGameMode === 'overdrive') {
       this.btnMode.textContent = i18n.t('modeOverdrive');
-      this.btnMode.className = 'hud-mode-btn hud-mode-overdrive';
+      this.btnMode.className = 'hud-mode-btn hud-mode-overdrive hud-desktop-only';
     } else if (this.currentGameMode === 'time_attack') {
       this.btnMode.textContent = i18n.t('modeTimeAttack');
-      this.btnMode.className = 'hud-mode-btn hud-mode-timeattack';
+      this.btnMode.className = 'hud-mode-btn hud-mode-timeattack hud-desktop-only';
     } else {
       this.btnMode.textContent = i18n.t('modeNormal');
-      this.btnMode.className = 'hud-mode-btn';
+      this.btnMode.className = 'hud-mode-btn hud-desktop-only';
     }
   }
 
   refreshTexts() {
     this.nextOrbLabel.textContent = i18n.t('nextOrb') + ':';
-    this.targetLabel.textContent = i18n.t('targetTier') + ':';
-    this.btnEvo.textContent = i18n.t('btnEvoGuide');
+    this.targetLabel.textContent = i18n.lang === 'pt' ? 'ALVO:' : (i18n.t('targetTier') + ':');
+    this.btnEvo.textContent = '📖';
+    this.btnEvo.title = i18n.t('btnEvoGuide');
     this.btnLang.textContent = i18n.lang.toUpperCase();
     this.btnMute.textContent = sound.isMuted ? '🔇' : '🔊';
     this.btnMute.title = sound.isMuted ? 'Unmute Audio' : 'Mute Audio';
@@ -452,20 +462,29 @@ export class GameHUD {
     this.hammerUses = hammerCount;
     this.undoUses = undoCount;
 
-    this.btnPulse.textContent = `⚡ ${i18n.t('btnPulse')} (${pulseCount})`;
+    const isPt = i18n.lang === 'pt';
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 640;
+
+    const pulseLabel = isMobile ? (isPt ? 'PULSO' : 'PULSE') : i18n.t('btnPulse');
+    const ventLabel = isMobile ? (isPt ? 'PURGAR' : 'VENT') : i18n.t('btnVent');
+    const catLabel = isMobile ? (isPt ? 'CATALIS.' : 'CATALYST') : i18n.t('btnCatalyst');
+    const hammerLabel = isMobile ? (isPt ? 'MARTELO' : 'HAMMER') : i18n.t('hammer');
+    const undoLabel = isMobile ? (isPt ? 'VOLTAR' : 'UNDO') : i18n.t('undo');
+
+    this.btnPulse.textContent = `⚡ ${pulseLabel} (${pulseCount})`;
     this.btnPulse.disabled = pulseCount <= 0;
 
-    this.btnVent.textContent = `🔥 ${i18n.t('btnVent')} (${ventCount})`;
+    this.btnVent.textContent = `🔥 ${ventLabel} (${ventCount})`;
     this.btnVent.disabled = ventCount <= 0;
 
-    this.btnCatalyst.textContent = `★ ${i18n.t('btnCatalyst')} (${catalystCount})`;
+    this.btnCatalyst.textContent = `★ ${catLabel} (${catalystCount})`;
     this.btnCatalyst.disabled = catalystCount <= 0;
 
-    const hammerLabel = hammerCount > 0 ? `(${hammerCount})` : `[+2 Ad]`;
-    this.btnHammer.textContent = `🔨 ${i18n.t('hammer')} ${hammerLabel}`;
+    const hammerSuffix = hammerCount > 0 ? `(${hammerCount})` : `[+2 Ad]`;
+    this.btnHammer.textContent = `🔨 ${hammerLabel} ${hammerSuffix}`;
 
-    const undoLabel = undoCount > 0 ? `(${undoCount})` : `[+2 Ad]`;
-    this.btnUndo.textContent = `↩️ ${i18n.t('undo')} ${undoLabel}`;
+    const undoSuffix = undoCount > 0 ? `(${undoCount})` : `[+2 Ad]`;
+    this.btnUndo.textContent = `↩️ ${undoLabel} ${undoSuffix}`;
   }
 
   setDangerVisible(visible, isShielded = false, secondsLeft = 5.0) {
@@ -602,7 +621,7 @@ export class GameHUD {
     this.modalBackdrop.appendChild(card);
   }
 
-  // ── PAUSE MODAL ───────────────────────────────────────────────────────────
+  // ── COMMAND CENTER / PAUSE MODAL ───────────────────────────────────────────
   openPauseModal() {
     if (this.callbacks.onPause) this.callbacks.onPause();
     crazyGames.gameplayStop();
@@ -611,12 +630,184 @@ export class GameHUD {
     this.modalBackdrop.className = 'hud-modal-backdrop';
 
     const card = document.createElement('div');
-    card.className = 'hud-modal-card';
+    card.className = 'hud-modal-card hud-modal-wide hud-hub-modal';
+
+    // Header with Title and Close (X)
+    const headerRow = document.createElement('div');
+    headerRow.className = 'hud-modal-header';
 
     const title = document.createElement('h2');
     title.className = 'hud-modal-title';
-    title.textContent = i18n.t('pausedTitle');
-    card.appendChild(title);
+    title.textContent = i18n.lang === 'pt' ? '⚙️ CENTRAL DE COMANDO' : '⚙️ COMMAND CENTER';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'hud-icon-btn';
+    closeBtn.textContent = '✕';
+    closeBtn.title = 'Close';
+    closeBtn.addEventListener('pointerdown', () => {
+      this.closeModal();
+      if (this.callbacks.onResume) this.callbacks.onResume();
+    });
+
+    headerRow.appendChild(title);
+    headerRow.appendChild(closeBtn);
+    card.appendChild(headerRow);
+
+    // Subtitle with Sector & Score info
+    const sub = document.createElement('p');
+    sub.className = 'hud-modal-sub';
+    const sectorName = `${i18n.t('sector')} ${String(this.lastStatus?.sectorId || 1).padStart(2, '0')}`;
+    sub.textContent = `${sectorName} • ${i18n.t('score')}: ${this.lastStatus?.score || 0}`;
+    card.appendChild(sub);
+
+    // ── SECTION 1: GAME MODE SELECTOR ──
+    const modeSection = document.createElement('div');
+    modeSection.className = 'hud-hub-section';
+
+    const modeTitle = document.createElement('div');
+    modeTitle.className = 'hud-hub-section-title';
+    modeTitle.textContent = i18n.lang === 'pt' ? '🎮 SELECIONE O MODO DE JOGO' : '🎮 SELECT GAME MODE';
+    modeSection.appendChild(modeTitle);
+
+    const modeGrid = document.createElement('div');
+    modeGrid.className = 'hud-hub-mode-grid';
+
+    const modes = [
+      { id: 'normal', name: i18n.t('modeNormal'), icon: '🟢', desc: i18n.lang === 'pt' ? 'Fases & Estrelas' : 'Sectors & Stars' },
+      { id: 'overdrive', name: i18n.t('modeOverdrive'), icon: '⚡', desc: i18n.lang === 'pt' ? '1.5x Vel. • 3x Moedas' : '1.5x Speed • 3x Coins' },
+      { id: 'time_attack', name: i18n.t('modeTimeAttack'), icon: '⏱️', desc: i18n.lang === 'pt' ? 'Desafio de 90s' : '90s Rush' }
+    ];
+
+    modes.forEach((m) => {
+      const modeBtn = document.createElement('button');
+      modeBtn.className = `hud-hub-mode-card ${this.currentGameMode === m.id ? 'active' : ''}`;
+      modeBtn.innerHTML = `
+        <span class="hud-hub-mode-icon">${m.icon}</span>
+        <span class="hud-hub-mode-name">${m.name}</span>
+        <span class="hud-hub-mode-desc">${m.desc}</span>
+      `;
+      modeBtn.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        this.currentGameMode = m.id;
+        this._updateModeBtnText();
+        if (this.callbacks.onSetGameMode) this.callbacks.onSetGameMode(m.id);
+        modeGrid.querySelectorAll('.hud-hub-mode-card').forEach((el) => el.classList.remove('active'));
+        modeBtn.classList.add('active');
+      });
+      modeGrid.appendChild(modeBtn);
+    });
+
+    modeSection.appendChild(modeGrid);
+    card.appendChild(modeSection);
+
+    // ── SECTION 2: META-GAME HUB ACCESS (DAILY, SHOP, ACHIEVEMENTS, GUIDE, SECTORS) ──
+    const hubGridSection = document.createElement('div');
+    hubGridSection.className = 'hud-hub-grid';
+
+    // Daily Rewards
+    const isDailyAvailable = dailyRewards.isClaimAvailable();
+    const btnDailyCard = document.createElement('button');
+    btnDailyCard.className = `hud-hub-action-card hud-btn-amber ${isDailyAvailable ? 'hud-badge-glow' : ''}`;
+    btnDailyCard.innerHTML = `
+      <span class="hud-hub-card-icon">🎁</span>
+      <div class="hud-hub-card-texts">
+        <strong>${i18n.lang === 'pt' ? 'Recompensas Diárias' : 'Daily Rewards'}</strong>
+        <small>${isDailyAvailable ? (i18n.lang === 'pt' ? 'Disponível Hoje!' : 'Claim Now!') : (i18n.lang === 'pt' ? 'Já Resgatado' : 'Claimed')}</small>
+      </div>
+    `;
+    btnDailyCard.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      this.openDailyRewardsModal();
+    });
+
+    // Shop
+    const btnShopCard = document.createElement('button');
+    btnShopCard.className = 'hud-hub-action-card hud-btn-purple';
+    btnShopCard.innerHTML = `
+      <span class="hud-hub-card-icon">🎨</span>
+      <div class="hud-hub-card-texts">
+        <strong>${i18n.lang === 'pt' ? 'Loja de Skins' : 'Cosmetic Shop'}</strong>
+        <small>${storage.data.plasmaShards || 0} Shards</small>
+      </div>
+    `;
+    btnShopCard.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      this.openShopModal();
+    });
+
+    // Achievements
+    const unlockedAch = achievements.getUnlockedCount();
+    const btnAchCard = document.createElement('button');
+    btnAchCard.className = 'hud-hub-action-card hud-btn-emerald';
+    btnAchCard.innerHTML = `
+      <span class="hud-hub-card-icon">🏆</span>
+      <div class="hud-hub-card-texts">
+        <strong>${i18n.lang === 'pt' ? 'Conquistas' : 'Achievements'}</strong>
+        <small>${unlockedAch} / ${ACHIEVEMENTS_DEF.length}</small>
+      </div>
+    `;
+    btnAchCard.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      this.openAchievementsModal();
+    });
+
+    // Evolution Guide
+    const btnEvoCard = document.createElement('button');
+    btnEvoCard.className = 'hud-hub-action-card hud-btn-accent';
+    btnEvoCard.innerHTML = `
+      <span class="hud-hub-card-icon">📖</span>
+      <div class="hud-hub-card-texts">
+        <strong>${i18n.lang === 'pt' ? 'Guia de Fusão' : 'Evolution Guide'}</strong>
+        <small>T1 (H+) ➔ T11</small>
+      </div>
+    `;
+    btnEvoCard.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      this.openEvolutionModal();
+    });
+
+    // Level Select
+    const btnLevelsCard = document.createElement('button');
+    btnLevelsCard.className = 'hud-hub-action-card';
+    btnLevelsCard.innerHTML = `
+      <span class="hud-hub-card-icon">[::]</span>
+      <div class="hud-hub-card-texts">
+        <strong>${i18n.lang === 'pt' ? 'Seleção de Fases' : 'Sector Select'}</strong>
+        <small>${storage.data.maxLevel || 1} / ${SECTORS.length}</small>
+      </div>
+    `;
+    btnLevelsCard.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      this.openLevelSelectModal();
+    });
+
+    // Endless Mode
+    const btnEndlessCard = document.createElement('button');
+    btnEndlessCard.className = 'hud-hub-action-card hud-btn-gold';
+    btnEndlessCard.innerHTML = `
+      <span class="hud-hub-card-icon">♾️</span>
+      <div class="hud-hub-card-texts">
+        <strong>${i18n.lang === 'pt' ? 'Fusão Infinita' : 'Endless Mode'}</strong>
+        <small>High: ${storage.data.highScore || 0}</small>
+      </div>
+    `;
+    btnEndlessCard.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      this.closeModal();
+      if (this.callbacks.onStartEndless) this.callbacks.onStartEndless();
+    });
+
+    hubGridSection.appendChild(btnDailyCard);
+    hubGridSection.appendChild(btnShopCard);
+    hubGridSection.appendChild(btnAchCard);
+    hubGridSection.appendChild(btnEvoCard);
+    hubGridSection.appendChild(btnLevelsCard);
+    hubGridSection.appendChild(btnEndlessCard);
+    card.appendChild(hubGridSection);
+
+    // ── SECTION 3: PRIMARY GAME ACTIONS (RESUME, RESTART) ──
+    const actionsRow = document.createElement('div');
+    actionsRow.className = 'hud-hub-actions-row';
 
     const btnResume = this._createModalBtn(i18n.t('resumeBtn'), 'primary', () => {
       this.closeModal();
@@ -628,19 +819,10 @@ export class GameHUD {
       if (this.callbacks.onRestart) this.callbacks.onRestart();
     });
 
-    const btnSelect = this._createModalBtn(i18n.t('levelSelectBtn'), 'secondary', () => {
-      this.openLevelSelectModal();
-    });
+    actionsRow.appendChild(btnResume);
+    actionsRow.appendChild(btnRestart);
+    card.appendChild(actionsRow);
 
-    const btnEndless = this._createModalBtn(i18n.t('endlessBtn'), 'gold', () => {
-      this.closeModal();
-      if (this.callbacks.onStartEndless) this.callbacks.onStartEndless();
-    });
-
-    card.appendChild(btnResume);
-    card.appendChild(btnRestart);
-    card.appendChild(btnSelect);
-    card.appendChild(btnEndless);
     this.modalBackdrop.appendChild(card);
   }
 
