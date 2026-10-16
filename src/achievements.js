@@ -103,6 +103,10 @@ class AchievementsManager {
     return Boolean(storage.data.achievements && storage.data.achievements[id]);
   }
 
+  getUnlockedCount() {
+    return ACHIEVEMENTS_DEF.filter((a) => this.isUnlocked(a.id)).length;
+  }
+
   unlock(id, onUnlockedCallback) {
     if (this.isUnlocked(id)) return false;
     storage.unlockAchievement(id);

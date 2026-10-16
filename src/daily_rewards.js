@@ -27,6 +27,11 @@ export class DailyRewardsManager {
     this.canClaim = storage.canClaimDaily();
   }
 
+  isClaimAvailable() {
+    this.refresh();
+    return Boolean(this.canClaim);
+  }
+
   getCalendarState() {
     this.refresh();
     const todayIndex = Math.min(Math.max(1, this.currentStreak), 7);

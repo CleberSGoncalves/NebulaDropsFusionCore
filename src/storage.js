@@ -26,8 +26,8 @@ const DEFAULT_SAVE_DATA = {
   lastClaimDayEpoch: 0,
   unlockedSkins: { default: true },
   equippedSkin: 'default',
-  hammerCount: 2,
-  undoCount: 2
+  hammerCount: 1,
+  undoCount: 1
 };
 
 class StorageManager {

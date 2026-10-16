@@ -171,10 +171,19 @@ export class GameHUD {
     this.btnPause.className = 'hud-icon-btn hud-btn-menu';
     this.btnPause.title = 'Command Center / Pause';
     this.btnPause.textContent = '⚙️';
-    this.btnPause.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
+    let lastPauseTrigger = 0;
+    const triggerPause = (e) => {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      const now = Date.now();
+      if (now - lastPauseTrigger < 300) return;
+      lastPauseTrigger = now;
       this.openPauseModal();
-    });
+    };
+    this.btnPause.addEventListener('pointerdown', triggerPause);
+    this.btnPause.addEventListener('click', triggerPause);
 
     btnCluster.appendChild(this.btnMode);
     btnCluster.appendChild(this.btnDaily);
@@ -455,36 +464,86 @@ export class GameHUD {
     this.targetSymbol.textContent = `${targetCfg.symbol} (T${targetCfg.tier})`;
   }
 
-  updateTacticalButtons(pulseCount, ventCount, catalystCount, hammerCount = 2, undoCount = 2) {
+  updateTacticalButtons(pulseCount, ventCount, catalystCount, hammerCount = 1, undoCount = 1, sectorId = null) {
     this.pulseUses = pulseCount;
     this.ventUses = ventCount;
     this.catalystUses = catalystCount;
     this.hammerUses = hammerCount;
     this.undoUses = undoCount;
 
+    const sec = sectorId || this.lastStatus?.sectorId || 1;
+    const isEndless = Boolean(this.lastStatus?.isEndless);
     const isPt = i18n.lang === 'pt';
     const isMobile = typeof window !== 'undefined' && window.innerWidth <= 640;
 
-    const pulseLabel = isMobile ? (isPt ? 'PULSO' : 'PULSE') : i18n.t('btnPulse');
-    const ventLabel = isMobile ? (isPt ? 'PURGAR' : 'VENT') : i18n.t('btnVent');
-    const catLabel = isMobile ? (isPt ? 'CATALIS.' : 'CATALYST') : i18n.t('btnCatalyst');
-    const hammerLabel = isMobile ? (isPt ? 'MARTELO' : 'HAMMER') : i18n.t('hammer');
-    const undoLabel = isMobile ? (isPt ? 'VOLTAR' : 'UNDO') : i18n.t('undo');
+    // Progressive Tactical Abilities Balance
+    const pulseUnlocked = isEndless || sec >= 2;
+    const ventUnlocked = isEndless || sec >= 4;
+    const catalystUnlocked = isEndless || sec >= 6;
+    const hammerUnlocked = isEndless || sec >= 7;
+    const undoUnlocked = isEndless || sec >= 10;
 
-    this.btnPulse.textContent = `⚡ ${pulseLabel} (${pulseCount})`;
-    this.btnPulse.disabled = pulseCount <= 0;
+    // 1. Pulse
+    if (!pulseUnlocked) {
+      this.btnPulse.textContent = isMobile ? '⚡ 🔒 S.2' : (isPt ? '⚡ BLOQ. (S.2)' : '⚡ LOCK (S.2)');
+      this.btnPulse.disabled = true;
+      this.btnPulse.title = isPt ? 'Desbloqueia no Setor 2' : 'Unlocks at Sector 2';
+    } else {
+      const pulseLabel = isMobile ? (isPt ? 'PULSO' : 'PULSE') : i18n.t('btnPulse');
+      this.btnPulse.textContent = `⚡ ${pulseLabel} (${pulseCount})`;
+      this.btnPulse.disabled = pulseCount <= 0;
+      this.btnPulse.title = isPt ? 'Onda gravitacional para destravar orbes' : 'Gravitational wave to unstick orbs';
+    }
 
-    this.btnVent.textContent = `🔥 ${ventLabel} (${ventCount})`;
-    this.btnVent.disabled = ventCount <= 0;
+    // 2. Vent
+    if (!ventUnlocked) {
+      this.btnVent.textContent = isMobile ? '🔥 🔒 S.4' : (isPt ? '🔥 BLOQ. (S.4)' : '🔥 LOCK (S.4)');
+      this.btnVent.disabled = true;
+      this.btnVent.title = isPt ? 'Desbloqueia no Setor 4' : 'Unlocks at Sector 4';
+    } else {
+      const ventLabel = isMobile ? (isPt ? 'PURGA' : 'VENT') : i18n.t('btnVent');
+      this.btnVent.textContent = `🔥 ${ventLabel} (${ventCount})`;
+      this.btnVent.disabled = ventCount <= 0;
+      this.btnVent.title = isPt ? 'Vaporiza o orbe menor para liberar espaço' : 'Purge smallest orb to clear space';
+    }
 
-    this.btnCatalyst.textContent = `★ ${catLabel} (${catalystCount})`;
-    this.btnCatalyst.disabled = catalystCount <= 0;
+    // 3. Catalyst
+    if (!catalystUnlocked) {
+      this.btnCatalyst.textContent = isMobile ? '★ 🔒 S.6' : (isPt ? '★ BLOQ. (S.6)' : '★ LOCK (S.6)');
+      this.btnCatalyst.disabled = true;
+      this.btnCatalyst.title = isPt ? 'Desbloqueia no Setor 6' : 'Unlocks at Sector 6';
+    } else {
+      const catLabel = isMobile ? (isPt ? 'CATAL.' : 'CATALYST') : i18n.t('btnCatalyst');
+      this.btnCatalyst.textContent = `★ ${catLabel} (${catalystCount})`;
+      this.btnCatalyst.disabled = catalystCount <= 0;
+      this.btnCatalyst.title = isPt ? 'Transforma o próximo orbe em coringa de fusão' : 'Next orb acts as universal wild fusion';
+    }
 
-    const hammerSuffix = hammerCount > 0 ? `(${hammerCount})` : `[+2 Ad]`;
-    this.btnHammer.textContent = `🔨 ${hammerLabel} ${hammerSuffix}`;
+    // 4. Hammer
+    if (!hammerUnlocked) {
+      this.btnHammer.textContent = isMobile ? '🔨 🔒 S.7' : (isPt ? '🔨 BLOQ. (S.7)' : '🔨 LOCK (S.7)');
+      this.btnHammer.disabled = true;
+      this.btnHammer.title = isPt ? 'Desbloqueia no Setor 7' : 'Unlocks at Sector 7';
+    } else {
+      const hammerLabel = isMobile ? (isPt ? 'MART.' : 'HAMMER') : i18n.t('hammer');
+      const hammerSuffix = hammerCount > 0 ? `(${hammerCount})` : `[+2 Ad]`;
+      this.btnHammer.textContent = `🔨 ${hammerLabel} ${hammerSuffix}`;
+      this.btnHammer.disabled = false;
+      this.btnHammer.title = isPt ? 'Vaporiza qualquer orbe selecionado' : 'Vaporize any chosen orb';
+    }
 
-    const undoSuffix = undoCount > 0 ? `(${undoCount})` : `[+2 Ad]`;
-    this.btnUndo.textContent = `↩️ ${undoLabel} ${undoSuffix}`;
+    // 5. Undo
+    if (!undoUnlocked) {
+      this.btnUndo.textContent = isMobile ? '↩️ 🔒 S.10' : (isPt ? '↩️ BLOQ. (S.10)' : '↩️ LOCK (S.10)');
+      this.btnUndo.disabled = true;
+      this.btnUndo.title = isPt ? 'Desbloqueia no Setor 10' : 'Unlocks at Sector 10';
+    } else {
+      const undoLabel = isMobile ? (isPt ? 'VOLT.' : 'UNDO') : i18n.t('undo');
+      const undoSuffix = undoCount > 0 ? `(${undoCount})` : `[+2 Ad]`;
+      this.btnUndo.textContent = `↩️ ${undoLabel} ${undoSuffix}`;
+      this.btnUndo.disabled = false;
+      this.btnUndo.title = isPt ? 'Desfaz a última jogada' : 'Undo last dropped orb';
+    }
   }
 
   setDangerVisible(visible, isShielded = false, secondsLeft = 5.0) {
@@ -623,207 +682,226 @@ export class GameHUD {
 
   // ── COMMAND CENTER / PAUSE MODAL ───────────────────────────────────────────
   openPauseModal() {
-    if (this.callbacks.onPause) this.callbacks.onPause();
-    crazyGames.gameplayStop();
+    try {
+      if (this.callbacks.onPause) this.callbacks.onPause();
+      crazyGames.gameplayStop();
 
-    this.modalBackdrop.innerHTML = '';
-    this.modalBackdrop.className = 'hud-modal-backdrop';
+      this.modalBackdrop.innerHTML = '';
+      this.modalBackdrop.className = 'hud-modal-backdrop';
 
-    const card = document.createElement('div');
-    card.className = 'hud-modal-card hud-modal-wide hud-hub-modal';
+      const card = document.createElement('div');
+      card.className = 'hud-modal-card hud-modal-wide hud-hub-modal';
 
-    // Header with Title and Close (X)
-    const headerRow = document.createElement('div');
-    headerRow.className = 'hud-modal-header';
+      // Header with Title and Close (X)
+      const headerRow = document.createElement('div');
+      headerRow.className = 'hud-modal-header';
 
-    const title = document.createElement('h2');
-    title.className = 'hud-modal-title';
-    title.textContent = i18n.lang === 'pt' ? '⚙️ CENTRAL DE COMANDO' : '⚙️ COMMAND CENTER';
+      const title = document.createElement('h2');
+      title.className = 'hud-modal-title';
+      title.textContent = i18n.lang === 'pt' ? '⚙️ CENTRAL DE COMANDO' : '⚙️ COMMAND CENTER';
 
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'hud-icon-btn';
-    closeBtn.textContent = '✕';
-    closeBtn.title = 'Close';
-    closeBtn.addEventListener('pointerdown', () => {
-      this.closeModal();
-      if (this.callbacks.onResume) this.callbacks.onResume();
-    });
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'hud-icon-btn';
+      closeBtn.textContent = '✕';
+      closeBtn.title = 'Close';
+      const doClose = (e) => {
+        if (e) {
+          e.stopPropagation();
+          e.preventDefault();
+        }
+        this.closeModal();
+        if (this.callbacks.onResume) this.callbacks.onResume();
+      };
+      closeBtn.addEventListener('pointerdown', doClose);
+      closeBtn.addEventListener('click', doClose);
 
-    headerRow.appendChild(title);
-    headerRow.appendChild(closeBtn);
-    card.appendChild(headerRow);
+      headerRow.appendChild(title);
+      headerRow.appendChild(closeBtn);
+      card.appendChild(headerRow);
 
-    // Subtitle with Sector & Score info
-    const sub = document.createElement('p');
-    sub.className = 'hud-modal-sub';
-    const sectorName = `${i18n.t('sector')} ${String(this.lastStatus?.sectorId || 1).padStart(2, '0')}`;
-    sub.textContent = `${sectorName} • ${i18n.t('score')}: ${this.lastStatus?.score || 0}`;
-    card.appendChild(sub);
+      // Subtitle with Sector & Score info
+      const sub = document.createElement('p');
+      sub.className = 'hud-modal-sub';
+      const sectorName = `${i18n.t('sector')} ${String(this.lastStatus?.sectorId || 1).padStart(2, '0')}`;
+      sub.textContent = `${sectorName} • ${i18n.t('score')}: ${this.lastStatus?.score || 0}`;
+      card.appendChild(sub);
 
-    // ── SECTION 1: GAME MODE SELECTOR ──
-    const modeSection = document.createElement('div');
-    modeSection.className = 'hud-hub-section';
+      // ── SECTION 1: GAME MODE SELECTOR ──
+      const modeSection = document.createElement('div');
+      modeSection.className = 'hud-hub-section';
 
-    const modeTitle = document.createElement('div');
-    modeTitle.className = 'hud-hub-section-title';
-    modeTitle.textContent = i18n.lang === 'pt' ? '🎮 SELECIONE O MODO DE JOGO' : '🎮 SELECT GAME MODE';
-    modeSection.appendChild(modeTitle);
+      const modeTitle = document.createElement('div');
+      modeTitle.className = 'hud-hub-section-title';
+      modeTitle.textContent = i18n.lang === 'pt' ? '🎮 SELECIONE O MODO DE JOGO' : '🎮 SELECT GAME MODE';
+      modeSection.appendChild(modeTitle);
 
-    const modeGrid = document.createElement('div');
-    modeGrid.className = 'hud-hub-mode-grid';
+      const modeGrid = document.createElement('div');
+      modeGrid.className = 'hud-hub-mode-grid';
 
-    const modes = [
-      { id: 'normal', name: i18n.t('modeNormal'), icon: '🟢', desc: i18n.lang === 'pt' ? 'Fases & Estrelas' : 'Sectors & Stars' },
-      { id: 'overdrive', name: i18n.t('modeOverdrive'), icon: '⚡', desc: i18n.lang === 'pt' ? '1.5x Vel. • 3x Moedas' : '1.5x Speed • 3x Coins' },
-      { id: 'time_attack', name: i18n.t('modeTimeAttack'), icon: '⏱️', desc: i18n.lang === 'pt' ? 'Desafio de 90s' : '90s Rush' }
-    ];
+      const modes = [
+        { id: 'normal', name: i18n.t('modeNormal'), icon: '🟢', desc: i18n.lang === 'pt' ? 'Fases & Estrelas' : 'Sectors & Stars' },
+        { id: 'overdrive', name: i18n.t('modeOverdrive'), icon: '⚡', desc: i18n.lang === 'pt' ? '1.5x Vel. • 3x Moedas' : '1.5x Speed • 3x Coins' },
+        { id: 'time_attack', name: i18n.t('modeTimeAttack'), icon: '⏱️', desc: i18n.lang === 'pt' ? 'Desafio de 90s' : '90s Rush' }
+      ];
 
-    modes.forEach((m) => {
-      const modeBtn = document.createElement('button');
-      modeBtn.className = `hud-hub-mode-card ${this.currentGameMode === m.id ? 'active' : ''}`;
-      modeBtn.innerHTML = `
-        <span class="hud-hub-mode-icon">${m.icon}</span>
-        <span class="hud-hub-mode-name">${m.name}</span>
-        <span class="hud-hub-mode-desc">${m.desc}</span>
-      `;
-      modeBtn.addEventListener('pointerdown', (e) => {
-        e.stopPropagation();
-        this.currentGameMode = m.id;
-        this._updateModeBtnText();
-        if (this.callbacks.onSetGameMode) this.callbacks.onSetGameMode(m.id);
-        modeGrid.querySelectorAll('.hud-hub-mode-card').forEach((el) => el.classList.remove('active'));
-        modeBtn.classList.add('active');
+      modes.forEach((m) => {
+        const modeBtn = document.createElement('button');
+        modeBtn.className = `hud-hub-mode-card ${this.currentGameMode === m.id ? 'active' : ''}`;
+        modeBtn.innerHTML = `
+          <span class="hud-hub-mode-icon">${m.icon}</span>
+          <span class="hud-hub-mode-name">${m.name}</span>
+          <span class="hud-hub-mode-desc">${m.desc}</span>
+        `;
+        modeBtn.addEventListener('pointerdown', (e) => {
+          e.stopPropagation();
+          this.currentGameMode = m.id;
+          this._updateModeBtnText();
+          if (this.callbacks.onSetGameMode) this.callbacks.onSetGameMode(m.id);
+          modeGrid.querySelectorAll('.hud-hub-mode-card').forEach((el) => el.classList.remove('active'));
+          modeBtn.classList.add('active');
+        });
+        modeGrid.appendChild(modeBtn);
       });
-      modeGrid.appendChild(modeBtn);
-    });
 
-    modeSection.appendChild(modeGrid);
-    card.appendChild(modeSection);
+      modeSection.appendChild(modeGrid);
+      card.appendChild(modeSection);
 
-    // ── SECTION 2: META-GAME HUB ACCESS (DAILY, SHOP, ACHIEVEMENTS, GUIDE, SECTORS) ──
-    const hubGridSection = document.createElement('div');
-    hubGridSection.className = 'hud-hub-grid';
+      // ── SECTION 2: META-GAME HUB ACCESS (DAILY, SHOP, ACHIEVEMENTS, GUIDE, SECTORS) ──
+      const hubGridSection = document.createElement('div');
+      hubGridSection.className = 'hud-hub-grid';
 
-    // Daily Rewards
-    const isDailyAvailable = dailyRewards.isClaimAvailable();
-    const btnDailyCard = document.createElement('button');
-    btnDailyCard.className = `hud-hub-action-card hud-btn-amber ${isDailyAvailable ? 'hud-badge-glow' : ''}`;
-    btnDailyCard.innerHTML = `
-      <span class="hud-hub-card-icon">🎁</span>
-      <div class="hud-hub-card-texts">
-        <strong>${i18n.lang === 'pt' ? 'Recompensas Diárias' : 'Daily Rewards'}</strong>
-        <small>${isDailyAvailable ? (i18n.lang === 'pt' ? 'Disponível Hoje!' : 'Claim Now!') : (i18n.lang === 'pt' ? 'Já Resgatado' : 'Claimed')}</small>
-      </div>
-    `;
-    btnDailyCard.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      this.openDailyRewardsModal();
-    });
+      // Daily Rewards
+      let isDailyAvailable = false;
+      try {
+        isDailyAvailable = dailyRewards?.isClaimAvailable ? dailyRewards.isClaimAvailable() : Boolean(storage.canClaimDaily?.());
+      } catch (_) {}
 
-    // Shop
-    const btnShopCard = document.createElement('button');
-    btnShopCard.className = 'hud-hub-action-card hud-btn-purple';
-    btnShopCard.innerHTML = `
-      <span class="hud-hub-card-icon">🎨</span>
-      <div class="hud-hub-card-texts">
-        <strong>${i18n.lang === 'pt' ? 'Loja de Skins' : 'Cosmetic Shop'}</strong>
-        <small>${storage.data.plasmaShards || 0} Shards</small>
-      </div>
-    `;
-    btnShopCard.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      this.openShopModal();
-    });
+      const btnDailyCard = document.createElement('button');
+      btnDailyCard.className = `hud-hub-action-card hud-btn-amber ${isDailyAvailable ? 'hud-badge-glow' : ''}`;
+      btnDailyCard.innerHTML = `
+        <span class="hud-hub-card-icon">🎁</span>
+        <div class="hud-hub-card-texts">
+          <strong>${i18n.lang === 'pt' ? 'Recompensas Diárias' : 'Daily Rewards'}</strong>
+          <small>${isDailyAvailable ? (i18n.lang === 'pt' ? 'Disponível Hoje!' : 'Claim Now!') : (i18n.lang === 'pt' ? 'Já Resgatado' : 'Claimed')}</small>
+        </div>
+      `;
+      btnDailyCard.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        this.openDailyRewardsModal();
+      });
 
-    // Achievements
-    const unlockedAch = achievements.getUnlockedCount();
-    const btnAchCard = document.createElement('button');
-    btnAchCard.className = 'hud-hub-action-card hud-btn-emerald';
-    btnAchCard.innerHTML = `
-      <span class="hud-hub-card-icon">🏆</span>
-      <div class="hud-hub-card-texts">
-        <strong>${i18n.lang === 'pt' ? 'Conquistas' : 'Achievements'}</strong>
-        <small>${unlockedAch} / ${ACHIEVEMENTS_DEF.length}</small>
-      </div>
-    `;
-    btnAchCard.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      this.openAchievementsModal();
-    });
+      // Shop
+      const shardsCount = storage.data?.plasmaShards || 0;
+      const btnShopCard = document.createElement('button');
+      btnShopCard.className = 'hud-hub-action-card hud-btn-purple';
+      btnShopCard.innerHTML = `
+        <span class="hud-hub-card-icon">🎨</span>
+        <div class="hud-hub-card-texts">
+          <strong>${i18n.lang === 'pt' ? 'Loja de Skins' : 'Cosmetic Shop'}</strong>
+          <small>${shardsCount} Shards</small>
+        </div>
+      `;
+      btnShopCard.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        this.openShopModal();
+      });
 
-    // Evolution Guide
-    const btnEvoCard = document.createElement('button');
-    btnEvoCard.className = 'hud-hub-action-card hud-btn-accent';
-    btnEvoCard.innerHTML = `
-      <span class="hud-hub-card-icon">📖</span>
-      <div class="hud-hub-card-texts">
-        <strong>${i18n.lang === 'pt' ? 'Guia de Fusão' : 'Evolution Guide'}</strong>
-        <small>T1 (H+) ➔ T11</small>
-      </div>
-    `;
-    btnEvoCard.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      this.openEvolutionModal();
-    });
+      // Achievements
+      let unlockedAch = 0;
+      try {
+        unlockedAch = achievements?.getUnlockedCount ? achievements.getUnlockedCount() : 0;
+      } catch (_) {}
 
-    // Level Select
-    const btnLevelsCard = document.createElement('button');
-    btnLevelsCard.className = 'hud-hub-action-card';
-    btnLevelsCard.innerHTML = `
-      <span class="hud-hub-card-icon">[::]</span>
-      <div class="hud-hub-card-texts">
-        <strong>${i18n.lang === 'pt' ? 'Seleção de Fases' : 'Sector Select'}</strong>
-        <small>${storage.data.maxLevel || 1} / ${SECTORS.length}</small>
-      </div>
-    `;
-    btnLevelsCard.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      this.openLevelSelectModal();
-    });
+      const btnAchCard = document.createElement('button');
+      btnAchCard.className = 'hud-hub-action-card hud-btn-emerald';
+      btnAchCard.innerHTML = `
+        <span class="hud-hub-card-icon">🏆</span>
+        <div class="hud-hub-card-texts">
+          <strong>${i18n.lang === 'pt' ? 'Conquistas' : 'Achievements'}</strong>
+          <small>${unlockedAch} / ${ACHIEVEMENTS_DEF.length}</small>
+        </div>
+      `;
+      btnAchCard.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        this.openAchievementsModal();
+      });
 
-    // Endless Mode
-    const btnEndlessCard = document.createElement('button');
-    btnEndlessCard.className = 'hud-hub-action-card hud-btn-gold';
-    btnEndlessCard.innerHTML = `
-      <span class="hud-hub-card-icon">♾️</span>
-      <div class="hud-hub-card-texts">
-        <strong>${i18n.lang === 'pt' ? 'Fusão Infinita' : 'Endless Mode'}</strong>
-        <small>High: ${storage.data.highScore || 0}</small>
-      </div>
-    `;
-    btnEndlessCard.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      this.closeModal();
-      if (this.callbacks.onStartEndless) this.callbacks.onStartEndless();
-    });
+      // Evolution Guide
+      const btnEvoCard = document.createElement('button');
+      btnEvoCard.className = 'hud-hub-action-card hud-btn-accent';
+      btnEvoCard.innerHTML = `
+        <span class="hud-hub-card-icon">📖</span>
+        <div class="hud-hub-card-texts">
+          <strong>${i18n.lang === 'pt' ? 'Guia de Fusão' : 'Evolution Guide'}</strong>
+          <small>T1 (H+) ➔ T11</small>
+        </div>
+      `;
+      btnEvoCard.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        this.openEvolutionModal();
+      });
 
-    hubGridSection.appendChild(btnDailyCard);
-    hubGridSection.appendChild(btnShopCard);
-    hubGridSection.appendChild(btnAchCard);
-    hubGridSection.appendChild(btnEvoCard);
-    hubGridSection.appendChild(btnLevelsCard);
-    hubGridSection.appendChild(btnEndlessCard);
-    card.appendChild(hubGridSection);
+      // Level Select
+      const btnLevelsCard = document.createElement('button');
+      btnLevelsCard.className = 'hud-hub-action-card';
+      btnLevelsCard.innerHTML = `
+        <span class="hud-hub-card-icon">[::]</span>
+        <div class="hud-hub-card-texts">
+          <strong>${i18n.lang === 'pt' ? 'Seleção de Fases' : 'Sector Select'}</strong>
+          <small>${storage.data.maxLevel || 1} / ${SECTORS.length}</small>
+        </div>
+      `;
+      btnLevelsCard.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        this.openLevelSelectModal();
+      });
 
-    // ── SECTION 3: PRIMARY GAME ACTIONS (RESUME, RESTART) ──
-    const actionsRow = document.createElement('div');
-    actionsRow.className = 'hud-hub-actions-row';
+      // Endless Mode
+      const btnEndlessCard = document.createElement('button');
+      btnEndlessCard.className = 'hud-hub-action-card hud-btn-gold';
+      btnEndlessCard.innerHTML = `
+        <span class="hud-hub-card-icon">♾️</span>
+        <div class="hud-hub-card-texts">
+          <strong>${i18n.lang === 'pt' ? 'Fusão Infinita' : 'Endless Mode'}</strong>
+          <small>High: ${storage.data.highScore || 0}</small>
+        </div>
+      `;
+      btnEndlessCard.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        this.closeModal();
+        if (this.callbacks.onStartEndless) this.callbacks.onStartEndless();
+      });
 
-    const btnResume = this._createModalBtn(i18n.t('resumeBtn'), 'primary', () => {
-      this.closeModal();
-      if (this.callbacks.onResume) this.callbacks.onResume();
-    });
+      hubGridSection.appendChild(btnDailyCard);
+      hubGridSection.appendChild(btnShopCard);
+      hubGridSection.appendChild(btnAchCard);
+      hubGridSection.appendChild(btnEvoCard);
+      hubGridSection.appendChild(btnLevelsCard);
+      hubGridSection.appendChild(btnEndlessCard);
+      card.appendChild(hubGridSection);
 
-    const btnRestart = this._createModalBtn(i18n.t('restartBtn'), 'secondary', () => {
-      this.closeModal();
-      if (this.callbacks.onRestart) this.callbacks.onRestart();
-    });
+      // ── SECTION 3: PRIMARY GAME ACTIONS (RESUME, RESTART) ──
+      const actionsRow = document.createElement('div');
+      actionsRow.className = 'hud-hub-actions-row';
 
-    actionsRow.appendChild(btnResume);
-    actionsRow.appendChild(btnRestart);
-    card.appendChild(actionsRow);
+      const btnResume = this._createModalBtn(i18n.t('resumeBtn'), 'primary', () => {
+        this.closeModal();
+        if (this.callbacks.onResume) this.callbacks.onResume();
+      });
 
-    this.modalBackdrop.appendChild(card);
+      const btnRestart = this._createModalBtn(i18n.t('restartBtn'), 'secondary', () => {
+        this.closeModal();
+        if (this.callbacks.onRestart) this.callbacks.onRestart();
+      });
+
+      actionsRow.appendChild(btnResume);
+      actionsRow.appendChild(btnRestart);
+      card.appendChild(actionsRow);
+
+      this.modalBackdrop.appendChild(card);
+    } catch (err) {
+      console.error('[HUD] Error in openPauseModal:', err);
+    }
   }
 
   // ── VISUAL LEVEL SELECT MODAL (RULE 10: 3-COLUMN CARDS & 3 STARS) ────────

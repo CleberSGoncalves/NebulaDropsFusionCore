@@ -1174,5 +1174,26 @@ body,
   background: rgba(2, 132, 199, 0.35);
   border-color: #00f5ff;
   color: #00f5ff;
-  font-size: 14px;
+  font-size: 15px;
+  cursor: pointer;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 35;
+  transition: transform 0.12s ease, background 0.15s ease;
+}
+
+.hud-btn-menu:active {
+  transform: scale(0.92) rotate(15deg);
+  background: rgba(0, 245, 255, 0.45);
+}
+
+.hud-action-btn.hud-btn-locked,
+.hud-action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+  border-color: rgba(100, 116, 139, 0.4);
+  color: #94a3b8;
+  transform: none !important;
+  box-shadow: none !important;
 }

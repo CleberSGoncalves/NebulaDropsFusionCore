@@ -383,11 +383,20 @@ export class GameEngine {
     this.reviveUsed = false;
     this.glitchIntensity = 0;
 
-    this.pulseUses = 2;
-    this.ventUses = 2;
-    this.catalystUses = 1;
-    this.hammerUses = storage.data.hammerCount !== undefined ? storage.data.hammerCount : 2;
-    this.undoUses = storage.data.undoCount !== undefined ? storage.data.undoCount : 2;
+    const secNum = this.isEndless ? 99 : (this.currentSectorIndex + 1);
+
+    // Balanced Progressive Tactical Abilities:
+    // Sector 1: PURE physics puzzle — zero cheat tools!
+    // Sector 2-3: 1 single emergency pulse
+    // Sector 4-5: 1 pulse + 1 vent
+    // Sector 6: 1 pulse + 1 vent + 1 catalyst
+    // Sector 7-9: + Hammer
+    // Sector 10+: + Undo
+    this.pulseUses = (this.isEndless || secNum >= 2) ? 1 : 0;
+    this.ventUses = (this.isEndless || secNum >= 4) ? 1 : 0;
+    this.catalystUses = (this.isEndless || secNum >= 6) ? 1 : 0;
+    this.hammerUses = (this.isEndless || secNum >= 7) ? (storage.data.hammerCount !== undefined ? storage.data.hammerCount : 1) : 0;
+    this.undoUses = (this.isEndless || secNum >= 10) ? (storage.data.undoCount !== undefined ? storage.data.undoCount : 1) : 0;
     this.isHammerActive = false;
     this.isCurrentCatalyst = false;
 
@@ -412,7 +421,7 @@ export class GameEngine {
     }
 
     this.hud.setDangerVisible(false, false, 5.0);
-    this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses);
+    this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses, secNum);
     sound.setTheme(sec.theme || 'default');
     sound.startAmbientMusic();
     this._syncHUD();
@@ -458,31 +467,55 @@ export class GameEngine {
   }
 
   useGravitationalPulse() {
+    const secNum = this.isEndless ? 99 : (this.currentSectorIndex + 1);
+    if (secNum < 2) {
+      const isPt = i18n.lang === 'pt';
+      this.physics.addFloatingText(isPt ? '🔒 DESBLOQUEIA NO SETOR 2!' : '🔒 UNLOCKS AT SECTOR 2!', (this.bounds.left + this.bounds.right) * 0.5, this.bounds.top + 70, '#38bdf8', 1.05);
+      return;
+    }
     if (this.pulseUses <= 0 || this.isPaused || this.isRoundOver) return;
     this.pulseUses--;
     this.physics.triggerGravitationalPulse();
-    this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses);
+    this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses, secNum);
   }
 
   usePlasmaVent() {
+    const secNum = this.isEndless ? 99 : (this.currentSectorIndex + 1);
+    if (secNum < 4) {
+      const isPt = i18n.lang === 'pt';
+      this.physics.addFloatingText(isPt ? '🔒 DESBLOQUEIA NO SETOR 4!' : '🔒 UNLOCKS AT SECTOR 4!', (this.bounds.left + this.bounds.right) * 0.5, this.bounds.top + 70, '#f97316', 1.05);
+      return;
+    }
     if (this.ventUses <= 0 || this.isPaused || this.isRoundOver || this.physics.orbs.length === 0) return;
     const removed = this.physics.triggerPlasmaVent();
     if (removed > 0) {
       this.ventUses--;
-      this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses);
+      this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses, secNum);
     }
   }
 
   useCatalyst() {
+    const secNum = this.isEndless ? 99 : (this.currentSectorIndex + 1);
+    if (secNum < 6) {
+      const isPt = i18n.lang === 'pt';
+      this.physics.addFloatingText(isPt ? '🔒 DESBLOQUEIA NO SETOR 6!' : '🔒 UNLOCKS AT SECTOR 6!', (this.bounds.left + this.bounds.right) * 0.5, this.bounds.top + 70, '#facc15', 1.05);
+      return;
+    }
     if (this.catalystUses <= 0 || this.isCurrentCatalyst || this.isPaused || this.isRoundOver) return;
     this.catalystUses--;
     this.isCurrentCatalyst = true;
     sound.playFluidClebFusion();
-    this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses);
+    this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses, secNum);
   }
 
   useHammer() {
     if (this.isPaused || this.isRoundOver) return;
+    const secNum = this.isEndless ? 99 : (this.currentSectorIndex + 1);
+    if (secNum < 7) {
+      const isPt = i18n.lang === 'pt';
+      this.physics.addFloatingText(isPt ? '🔒 DESBLOQUEIA NO SETOR 7!' : '🔒 UNLOCKS AT SECTOR 7!', (this.bounds.left + this.bounds.right) * 0.5, this.bounds.top + 70, '#f43f5e', 1.05);
+      return;
+    }
     if (this.hammerUses <= 0) {
       // Prompt rewarded ad to recharge 2 hammers
       crazyGames.requestRewardedAd(
@@ -490,7 +523,7 @@ export class GameEngine {
         () => {
           this.hammerUses += 2;
           storage.save({ hammerCount: this.hammerUses });
-          this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses);
+          this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses, secNum);
         },
         () => {}
       );
@@ -506,6 +539,12 @@ export class GameEngine {
 
   useUndo() {
     if (this.isPaused || this.isRoundOver) return;
+    const secNum = this.isEndless ? 99 : (this.currentSectorIndex + 1);
+    if (secNum < 10) {
+      const isPt = i18n.lang === 'pt';
+      this.physics.addFloatingText(isPt ? '🔒 DESBLOQUEIA NO SETOR 10!' : '🔒 UNLOCKS AT SECTOR 10!', (this.bounds.left + this.bounds.right) * 0.5, this.bounds.top + 70, '#14b8a6', 1.05);
+      return;
+    }
     if (this.undoUses <= 0) {
       // Prompt rewarded ad to recharge 2 undos
       crazyGames.requestRewardedAd(
@@ -513,7 +552,7 @@ export class GameEngine {
         () => {
           this.undoUses += 2;
           storage.save({ undoCount: this.undoUses });
-          this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses);
+          this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses, secNum);
         },
         () => {}
       );
@@ -528,7 +567,7 @@ export class GameEngine {
     this.hasUsedUndo = true;
     playTacticalUndoSound();
     if (this.hasUsedHammer) achievements.unlock('tactical_genius');
-    this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses);
+    this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses, secNum);
     const isPt = i18n.lang === 'pt';
     this.physics.addFloatingText(isPt ? '↩️ DESFEITO!' : '↩️ UNDONE!', lastOrb.x, lastOrb.y - 12, '#38bdf8', 1.1);
   }
