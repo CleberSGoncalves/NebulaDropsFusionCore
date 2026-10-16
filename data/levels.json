@@ -1,0 +1,373 @@
+{
+  "version": "1.2.0",
+  "total_levels": 20,
+  "levels": [
+    {
+      "id": 1,
+      "name_en": "Ignition Chamber",
+      "name_pt": "Câmara de Ignição",
+      "target_score": 150,
+      "star1_score": 150,
+      "star2_score": 260,
+      "star3_score": 400,
+      "target_tier": 3,
+      "time_limit": 150,
+      "gravity": 700,
+      "theme": "default",
+      "shard_reward": 30,
+      "initial_orbs": [
+        { "tier": 1, "x_offset": -45 },
+        { "tier": 2, "x_offset": 45 }
+      ]
+    },
+    {
+      "id": 2,
+      "name_en": "Ion Conduit",
+      "name_pt": "Conduto de Íons",
+      "target_score": 320,
+      "star1_score": 320,
+      "star2_score": 520,
+      "star3_score": 780,
+      "target_tier": 4,
+      "time_limit": 150,
+      "gravity": 700,
+      "theme": "default",
+      "shard_reward": 40,
+      "initial_orbs": [
+        { "tier": 2, "x_offset": -55 },
+        { "tier": 2, "x_offset": 55 }
+      ]
+    },
+    {
+      "id": 3,
+      "name_en": "Aurora Collector",
+      "name_pt": "Coletor Aurora",
+      "target_score": 550,
+      "star1_score": 550,
+      "star2_score": 850,
+      "star3_score": 1200,
+      "target_tier": 4,
+      "time_limit": 150,
+      "gravity": 720,
+      "theme": "cyber_void",
+      "shard_reward": 50,
+      "initial_orbs": [
+        { "tier": 2, "x_offset": -65 },
+        { "tier": 3, "x_offset": 0 },
+        { "tier": 2, "x_offset": 65 }
+      ]
+    },
+    {
+      "id": 4,
+      "name_en": "Stabilizer Silo",
+      "name_pt": "Silo Estabilizador",
+      "target_score": 900,
+      "star1_score": 900,
+      "star2_score": 1350,
+      "star3_score": 1850,
+      "target_tier": 5,
+      "time_limit": 160,
+      "gravity": 720,
+      "theme": "default",
+      "shard_reward": 65,
+      "initial_orbs": [
+        { "tier": 3, "x_offset": -60 },
+        { "tier": 3, "x_offset": 60 }
+      ]
+    },
+    {
+      "id": 5,
+      "name_en": "Tachyon Reservoir",
+      "name_pt": "Reservatório Táquion",
+      "target_score": 1300,
+      "star1_score": 1300,
+      "star2_score": 1900,
+      "star3_score": 2600,
+      "target_tier": 5,
+      "time_limit": 160,
+      "gravity": 730,
+      "theme": "cyber_void",
+      "shard_reward": 80,
+      "initial_orbs": [
+        { "tier": 3, "x_offset": -70 },
+        { "tier": 4, "x_offset": 0 },
+        { "tier": 3, "x_offset": 70 }
+      ]
+    },
+    {
+      "id": 6,
+      "name_en": "Supernova Bay",
+      "name_pt": "Baía Supernova",
+      "target_score": 1900,
+      "star1_score": 1900,
+      "star2_score": 2700,
+      "star3_score": 3600,
+      "target_tier": 6,
+      "time_limit": 170,
+      "gravity": 740,
+      "theme": "zen_crystal",
+      "shard_reward": 100,
+      "initial_orbs": [
+        { "tier": 4, "x_offset": -65 },
+        { "tier": 4, "x_offset": 65 }
+      ]
+    },
+    {
+      "id": 7,
+      "name_en": "Quantum Well",
+      "name_pt": "Poço Quântico",
+      "target_score": 2700,
+      "star1_score": 2700,
+      "star2_score": 3800,
+      "star3_score": 5000,
+      "target_tier": 6,
+      "time_limit": 175,
+      "gravity": 750,
+      "theme": "default",
+      "shard_reward": 120,
+      "initial_orbs": [
+        { "tier": 4, "x_offset": -75 },
+        { "tier": 5, "x_offset": 0 },
+        { "tier": 4, "x_offset": 75 }
+      ]
+    },
+    {
+      "id": 8,
+      "name_en": "Antimatter Vault",
+      "name_pt": "Cofre de Antimatéria",
+      "target_score": 3800,
+      "star1_score": 3800,
+      "star2_score": 5200,
+      "star3_score": 6800,
+      "target_tier": 7,
+      "time_limit": 180,
+      "gravity": 750,
+      "theme": "cyber_void",
+      "shard_reward": 150,
+      "initial_orbs": [
+        { "tier": 5, "x_offset": -70 },
+        { "tier": 5, "x_offset": 70 }
+      ]
+    },
+    {
+      "id": 9,
+      "name_en": "Hypergravity Core",
+      "name_pt": "Núcleo Hipergravidade",
+      "target_score": 5400,
+      "star1_score": 5400,
+      "star2_score": 7400,
+      "star3_score": 9600,
+      "target_tier": 8,
+      "time_limit": 190,
+      "gravity": 770,
+      "theme": "default",
+      "shard_reward": 180,
+      "initial_orbs": [
+        { "tier": 5, "x_offset": -75 },
+        { "tier": 6, "x_offset": 75 }
+      ]
+    },
+    {
+      "id": 10,
+      "name_en": "Dark Energy Matrix",
+      "name_pt": "Matriz Energia Escura",
+      "target_score": 7500,
+      "star1_score": 7500,
+      "star2_score": 10500,
+      "star3_score": 14000,
+      "target_tier": 9,
+      "time_limit": 200,
+      "gravity": 760,
+      "theme": "cyber_void",
+      "shard_reward": 220,
+      "initial_orbs": [
+        { "tier": 6, "x_offset": -75 },
+        { "tier": 6, "x_offset": 75 }
+      ]
+    },
+    {
+      "id": 11,
+      "name_en": "Pulsar Dynamo",
+      "name_pt": "Dínamo Pulsar",
+      "target_score": 11000,
+      "star1_score": 11000,
+      "star2_score": 15500,
+      "star3_score": 20500,
+      "target_tier": 10,
+      "time_limit": 210,
+      "gravity": 750,
+      "theme": "zen_crystal",
+      "shard_reward": 300,
+      "initial_orbs": [
+        { "tier": 6, "x_offset": -80 },
+        { "tier": 7, "x_offset": 0 },
+        { "tier": 6, "x_offset": 80 }
+      ]
+    },
+    {
+      "id": 12,
+      "name_en": "Omega Nebula Apex",
+      "name_pt": "Ápice Ômega Nebula",
+      "target_score": 18000,
+      "star1_score": 18000,
+      "star2_score": 25000,
+      "star3_score": 34000,
+      "target_tier": 11,
+      "time_limit": 240,
+      "gravity": 740,
+      "theme": "cyber_void",
+      "shard_reward": 600,
+      "initial_orbs": [
+        { "tier": 7, "x_offset": -80 },
+        { "tier": 7, "x_offset": 80 }
+      ]
+    },
+    {
+      "id": 13,
+      "name_en": "Prismatic Apex",
+      "name_pt": "Ápice Prismático",
+      "target_score": 22000,
+      "star1_score": 22000,
+      "star2_score": 30000,
+      "star3_score": 40000,
+      "target_tier": 7,
+      "time_limit": 220,
+      "gravity": 730,
+      "theme": "zen_crystal",
+      "shard_reward": 400,
+      "initial_orbs": [
+        { "tier": 5, "x_offset": -60 },
+        { "tier": 5, "x_offset": 60 }
+      ]
+    },
+    {
+      "id": 14,
+      "name_en": "Vortex Rift",
+      "name_pt": "Fenda de Vórtice",
+      "target_score": 26000,
+      "star1_score": 26000,
+      "star2_score": 35000,
+      "star3_score": 48000,
+      "target_tier": 8,
+      "time_limit": 230,
+      "gravity": 750,
+      "theme": "cyber_void",
+      "shard_reward": 450,
+      "initial_orbs": [
+        { "tier": 6, "x_offset": -70 },
+        { "tier": 6, "x_offset": 70 }
+      ]
+    },
+    {
+      "id": 15,
+      "name_en": "Cryo Reactor Core",
+      "name_pt": "Reator Crio-Zero",
+      "target_score": 31000,
+      "star1_score": 31000,
+      "star2_score": 42000,
+      "star3_score": 56000,
+      "target_tier": 8,
+      "time_limit": 240,
+      "gravity": 710,
+      "theme": "zen_crystal",
+      "shard_reward": 500,
+      "initial_orbs": [
+        { "tier": 5, "x_offset": -75 },
+        { "tier": 6, "x_offset": 0 },
+        { "tier": 5, "x_offset": 75 }
+      ]
+    },
+    {
+      "id": 16,
+      "name_en": "Singularity Forge",
+      "name_pt": "Forja de Singularidades",
+      "target_score": 37000,
+      "star1_score": 37000,
+      "star2_score": 50000,
+      "star3_score": 66000,
+      "target_tier": 9,
+      "time_limit": 250,
+      "gravity": 760,
+      "theme": "cyber_void",
+      "shard_reward": 550,
+      "initial_orbs": [
+        { "tier": 6, "x_offset": -75 },
+        { "tier": 7, "x_offset": 75 }
+      ]
+    },
+    {
+      "id": 17,
+      "name_en": "Magnetic Storm Chamber",
+      "name_pt": "Câmara Tempestade Magnética",
+      "target_score": 44000,
+      "star1_score": 44000,
+      "star2_score": 59000,
+      "star3_score": 78000,
+      "target_tier": 9,
+      "time_limit": 260,
+      "gravity": 770,
+      "theme": "default",
+      "shard_reward": 600,
+      "initial_orbs": [
+        { "tier": 6, "x_offset": -80 },
+        { "tier": 7, "x_offset": 0 },
+        { "tier": 6, "x_offset": 80 }
+      ]
+    },
+    {
+      "id": 18,
+      "name_en": "Cosmic Labyrinth",
+      "name_pt": "Labirinto Cósmico",
+      "target_score": 52000,
+      "star1_score": 52000,
+      "star2_score": 70000,
+      "star3_score": 92000,
+      "target_tier": 10,
+      "time_limit": 270,
+      "gravity": 740,
+      "theme": "zen_crystal",
+      "shard_reward": 700,
+      "initial_orbs": [
+        { "tier": 7, "x_offset": -75 },
+        { "tier": 7, "x_offset": 75 }
+      ]
+    },
+    {
+      "id": 19,
+      "name_en": "Event Horizon Nexus",
+      "name_pt": "Nexus Horizonte de Eventos",
+      "target_score": 62000,
+      "star1_score": 62000,
+      "star2_score": 82000,
+      "star3_score": 110000,
+      "target_tier": 10,
+      "time_limit": 280,
+      "gravity": 780,
+      "theme": "cyber_void",
+      "shard_reward": 800,
+      "initial_orbs": [
+        { "tier": 7, "x_offset": -80 },
+        { "tier": 8, "x_offset": 0 },
+        { "tier": 7, "x_offset": 80 }
+      ]
+    },
+    {
+      "id": 20,
+      "name_en": "Supreme Stellar Collapse",
+      "name_pt": "Colapso Estelar Supremo",
+      "target_score": 75000,
+      "star1_score": 75000,
+      "star2_score": 100000,
+      "star3_score": 140000,
+      "target_tier": 11,
+      "time_limit": 300,
+      "gravity": 790,
+      "theme": "cyber_void",
+      "shard_reward": 1000,
+      "initial_orbs": [
+        { "tier": 8, "x_offset": -85 },
+        { "tier": 8, "x_offset": 85 }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 /**
- * @fileoverview Orb Tiers & 12 Reactor Sectors Configuration for Nebula Drops: Fusion Core
+ * @fileoverview Orb Tiers & 20 Progressive Handcrafted Sectors for Nebula Drops: Fusion Core
  * Balanced for intuitive, crystal-clear Suika-style Drop & Merge progression:
+ * - 20 Handcrafted progressive sectors (Default, Cyber Void, and Zen Crystal themes)
  * - Explicit 1-Star (star1Score), 2-Star (star2Score), and 3-Star (star3Score) thresholds
  * - Synthesizing the Sector's Target Core (targetTier) awards an instant Target Bonus and completes the sector!
  * - Reaching 1-Star (star1Score) unlocks the "COMPLETE SECTOR" button (or players can keep merging for 2★ and 3★!)
@@ -139,15 +140,16 @@ export const SECTORS = [
     star1Score: 150,
     star2Score: 260,
     star3Score: 400,
-    targetTier: 3, // Li (H+ + H+ -> He, He + He -> Li)
+    targetTier: 3,
     timeLimit: 150,
     gravity: 700,
     restitution: 0.32,
+    theme: 'default',
+    shardReward: 30,
     initialOrbs: [
       { tier: 1, xOffset: -45 },
       { tier: 2, xOffset: 45 }
-    ],
-    shardReward: 30
+    ]
   },
   {
     id: 2,
@@ -157,15 +159,16 @@ export const SECTORS = [
     star1Score: 320,
     star2Score: 520,
     star3Score: 780,
-    targetTier: 4, // Be
+    targetTier: 4,
     timeLimit: 150,
     gravity: 700,
     restitution: 0.34,
+    theme: 'default',
+    shardReward: 40,
     initialOrbs: [
       { tier: 2, xOffset: -55 },
       { tier: 2, xOffset: 55 }
-    ],
-    shardReward: 40
+    ]
   },
   {
     id: 3,
@@ -175,16 +178,17 @@ export const SECTORS = [
     star1Score: 550,
     star2Score: 850,
     star3Score: 1200,
-    targetTier: 4, // Be
+    targetTier: 4,
     timeLimit: 150,
     gravity: 720,
     restitution: 0.35,
+    theme: 'cyber_void',
+    shardReward: 50,
     initialOrbs: [
       { tier: 2, xOffset: -65 },
       { tier: 3, xOffset: 0 },
       { tier: 2, xOffset: 65 }
-    ],
-    shardReward: 50
+    ]
   },
   {
     id: 4,
@@ -194,15 +198,16 @@ export const SECTORS = [
     star1Score: 900,
     star2Score: 1350,
     star3Score: 1850,
-    targetTier: 5, // B
+    targetTier: 5,
     timeLimit: 160,
     gravity: 720,
     restitution: 0.35,
+    theme: 'default',
+    shardReward: 65,
     initialOrbs: [
       { tier: 3, xOffset: -60 },
       { tier: 3, xOffset: 60 }
-    ],
-    shardReward: 65
+    ]
   },
   {
     id: 5,
@@ -212,16 +217,17 @@ export const SECTORS = [
     star1Score: 1300,
     star2Score: 1900,
     star3Score: 2600,
-    targetTier: 5, // B
+    targetTier: 5,
     timeLimit: 160,
     gravity: 730,
     restitution: 0.35,
+    theme: 'cyber_void',
+    shardReward: 80,
     initialOrbs: [
       { tier: 3, xOffset: -70 },
       { tier: 4, xOffset: 0 },
       { tier: 3, xOffset: 70 }
-    ],
-    shardReward: 80
+    ]
   },
   {
     id: 6,
@@ -231,15 +237,16 @@ export const SECTORS = [
     star1Score: 1900,
     star2Score: 2700,
     star3Score: 3600,
-    targetTier: 6, // C
+    targetTier: 6,
     timeLimit: 170,
     gravity: 740,
     restitution: 0.35,
+    theme: 'zen_crystal',
+    shardReward: 100,
     initialOrbs: [
       { tier: 4, xOffset: -65 },
       { tier: 4, xOffset: 65 }
-    ],
-    shardReward: 100
+    ]
   },
   {
     id: 7,
@@ -249,16 +256,17 @@ export const SECTORS = [
     star1Score: 2700,
     star2Score: 3800,
     star3Score: 5000,
-    targetTier: 6, // C
+    targetTier: 6,
     timeLimit: 175,
     gravity: 750,
     restitution: 0.36,
+    theme: 'default',
+    shardReward: 120,
     initialOrbs: [
       { tier: 4, xOffset: -75 },
       { tier: 5, xOffset: 0 },
       { tier: 4, xOffset: 75 }
-    ],
-    shardReward: 120
+    ]
   },
   {
     id: 8,
@@ -268,15 +276,16 @@ export const SECTORS = [
     star1Score: 3800,
     star2Score: 5200,
     star3Score: 6800,
-    targetTier: 7, // N
+    targetTier: 7,
     timeLimit: 180,
     gravity: 750,
     restitution: 0.36,
+    theme: 'cyber_void',
+    shardReward: 150,
     initialOrbs: [
       { tier: 5, xOffset: -70 },
       { tier: 5, xOffset: 70 }
-    ],
-    shardReward: 150
+    ]
   },
   {
     id: 9,
@@ -286,15 +295,16 @@ export const SECTORS = [
     star1Score: 5400,
     star2Score: 7400,
     star3Score: 9600,
-    targetTier: 8, // O
+    targetTier: 8,
     timeLimit: 190,
     gravity: 770,
     restitution: 0.34,
+    theme: 'default',
+    shardReward: 180,
     initialOrbs: [
       { tier: 5, xOffset: -75 },
       { tier: 6, xOffset: 75 }
-    ],
-    shardReward: 180
+    ]
   },
   {
     id: 10,
@@ -304,15 +314,16 @@ export const SECTORS = [
     star1Score: 7500,
     star2Score: 10500,
     star3Score: 14000,
-    targetTier: 9, // Ne
+    targetTier: 9,
     timeLimit: 200,
     gravity: 760,
     restitution: 0.36,
+    theme: 'cyber_void',
+    shardReward: 220,
     initialOrbs: [
       { tier: 6, xOffset: -75 },
       { tier: 6, xOffset: 75 }
-    ],
-    shardReward: 220
+    ]
   },
   {
     id: 11,
@@ -322,16 +333,17 @@ export const SECTORS = [
     star1Score: 11000,
     star2Score: 15500,
     star3Score: 20500,
-    targetTier: 10, // Ar
+    targetTier: 10,
     timeLimit: 210,
     gravity: 750,
     restitution: 0.36,
+    theme: 'zen_crystal',
+    shardReward: 300,
     initialOrbs: [
       { tier: 6, xOffset: -80 },
       { tier: 7, xOffset: 0 },
       { tier: 6, xOffset: 80 }
-    ],
-    shardReward: 300
+    ]
   },
   {
     id: 12,
@@ -341,14 +353,170 @@ export const SECTORS = [
     star1Score: 18000,
     star2Score: 25000,
     star3Score: 34000,
-    targetTier: 11, // Ω
+    targetTier: 11,
     timeLimit: 240,
     gravity: 740,
     restitution: 0.36,
+    theme: 'cyber_void',
+    shardReward: 600,
     initialOrbs: [
       { tier: 7, xOffset: -80 },
       { tier: 7, xOffset: 80 }
-    ],
-    shardReward: 600
+    ]
+  },
+  {
+    id: 13,
+    nameEn: 'Prismatic Apex',
+    namePt: 'Ápice Prismático',
+    targetScore: 22000,
+    star1Score: 22000,
+    star2Score: 30000,
+    star3Score: 40000,
+    targetTier: 7,
+    timeLimit: 220,
+    gravity: 730,
+    restitution: 0.36,
+    theme: 'zen_crystal',
+    shardReward: 400,
+    initialOrbs: [
+      { tier: 5, xOffset: -60 },
+      { tier: 5, xOffset: 60 }
+    ]
+  },
+  {
+    id: 14,
+    nameEn: 'Vortex Rift',
+    namePt: 'Fenda de Vórtice',
+    targetScore: 26000,
+    star1Score: 26000,
+    star2Score: 35000,
+    star3Score: 48000,
+    targetTier: 8,
+    timeLimit: 230,
+    gravity: 750,
+    restitution: 0.36,
+    theme: 'cyber_void',
+    shardReward: 450,
+    initialOrbs: [
+      { tier: 6, xOffset: -70 },
+      { tier: 6, xOffset: 70 }
+    ]
+  },
+  {
+    id: 15,
+    nameEn: 'Cryo Reactor Core',
+    namePt: 'Reator Crio-Zero',
+    targetScore: 31000,
+    star1Score: 31000,
+    star2Score: 42000,
+    star3Score: 56000,
+    targetTier: 8,
+    timeLimit: 240,
+    gravity: 710,
+    restitution: 0.35,
+    theme: 'zen_crystal',
+    shardReward: 500,
+    initialOrbs: [
+      { tier: 5, xOffset: -75 },
+      { tier: 6, xOffset: 0 },
+      { tier: 5, xOffset: 75 }
+    ]
+  },
+  {
+    id: 16,
+    nameEn: 'Singularity Forge',
+    namePt: 'Forja de Singularidades',
+    targetScore: 37000,
+    star1Score: 37000,
+    star2Score: 50000,
+    star3Score: 66000,
+    targetTier: 9,
+    timeLimit: 250,
+    gravity: 760,
+    restitution: 0.36,
+    theme: 'cyber_void',
+    shardReward: 550,
+    initialOrbs: [
+      { tier: 6, xOffset: -75 },
+      { tier: 7, xOffset: 75 }
+    ]
+  },
+  {
+    id: 17,
+    nameEn: 'Magnetic Storm Chamber',
+    namePt: 'Câmara Tempestade Magnética',
+    targetScore: 44000,
+    star1Score: 44000,
+    star2Score: 59000,
+    star3Score: 78000,
+    targetTier: 9,
+    timeLimit: 260,
+    gravity: 770,
+    restitution: 0.36,
+    theme: 'default',
+    shardReward: 600,
+    initialOrbs: [
+      { tier: 6, xOffset: -80 },
+      { tier: 7, xOffset: 0 },
+      { tier: 6, xOffset: 80 }
+    ]
+  },
+  {
+    id: 18,
+    nameEn: 'Cosmic Labyrinth',
+    namePt: 'Labirinto Cósmico',
+    targetScore: 52000,
+    star1Score: 52000,
+    star2Score: 70000,
+    star3Score: 92000,
+    targetTier: 10,
+    timeLimit: 270,
+    gravity: 740,
+    restitution: 0.36,
+    theme: 'zen_crystal',
+    shardReward: 700,
+    initialOrbs: [
+      { tier: 7, xOffset: -75 },
+      { tier: 7, xOffset: 75 }
+    ]
+  },
+  {
+    id: 19,
+    nameEn: 'Event Horizon Nexus',
+    namePt: 'Nexus Horizonte de Eventos',
+    targetScore: 62000,
+    star1Score: 62000,
+    star2Score: 82000,
+    star3Score: 110000,
+    targetTier: 10,
+    timeLimit: 280,
+    gravity: 780,
+    restitution: 0.36,
+    theme: 'cyber_void',
+    shardReward: 800,
+    initialOrbs: [
+      { tier: 7, xOffset: -80 },
+      { tier: 8, xOffset: 0 },
+      { tier: 7, xOffset: 80 }
+    ]
+  },
+  {
+    id: 20,
+    nameEn: 'Supreme Stellar Collapse',
+    namePt: 'Colapso Estelar Supremo',
+    targetScore: 75000,
+    star1Score: 75000,
+    star2Score: 100000,
+    star3Score: 140000,
+    targetTier: 11,
+    timeLimit: 300,
+    gravity: 790,
+    restitution: 0.36,
+    theme: 'cyber_void',
+    shardReward: 1000,
+    initialOrbs: [
+      { tier: 8, xOffset: -85 },
+      { tier: 8, xOffset: 85 }
+    ]
   }
 ];

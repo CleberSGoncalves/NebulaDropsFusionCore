@@ -102,7 +102,25 @@ export const TRANSLATIONS = {
     // Evolution Modal
     evolutionChain: 'FUSION EVOLUTION CHAIN',
     evolutionModalTitle: 'CORE EVOLUTION & STAR GUIDE',
-    evolutionModalSub: 'Merge 2 identical cores to evolve to the next tier and earn points toward ★, ★★, and ★★★:'
+    evolutionModalSub: 'Merge 2 identical cores to evolve to the next tier and earn points toward ★, ★★, and ★★★:',
+
+    // New Game Modes & Features
+    modeNormal: 'NORMAL',
+    modeOverdrive: '⚡ OVERDRIVE',
+    modeTimeAttack: '⏱️ TIME ATTACK',
+    hammer: 'HAMMER',
+    undo: 'UNDO',
+    rechargeAd: 'WATCH AD (+2)',
+    dailyRewards: 'DAILY LOGIN REWARDS',
+    claimReward: 'CLAIM REWARD',
+    claimedToday: 'CLAIMED TODAY',
+    shopTitle: 'COSMETIC SKINS SHOP',
+    achievementsTitle: 'ACHIEVEMENTS VAULT',
+    equipSkin: 'EQUIP',
+    equipped: 'EQUIPPED',
+    buyShards: 'BUY',
+    unlockAd: 'UNLOCK WITH AD',
+    scoreMultiplier: 'PERMANENT MULTIPLIER'
   },
 
   pt: {
@@ -202,7 +220,25 @@ export const TRANSLATIONS = {
     // Evolution Modal
     evolutionChain: 'CADEIA DE EVOLUÇÃO DE FUSÃO',
     evolutionModalTitle: 'GUIA DE EVOLUÇÃO E ESTRELAS',
-    evolutionModalSub: 'Funda 2 núcleos idênticos para criar o próximo nível e ganhar pontos para ★, ★★ e ★★★:'
+    evolutionModalSub: 'Funda 2 núcleos idênticos para criar o próximo nível e ganhar pontos para ★, ★★ e ★★★:',
+
+    // New Game Modes & Features
+    modeNormal: 'NORMAL',
+    modeOverdrive: '⚡ OVERDRIVE',
+    modeTimeAttack: '⏱️ TIME ATTACK',
+    hammer: 'MARTELO',
+    undo: 'DESFAZER',
+    rechargeAd: 'VER ANÚNCIO (+2)',
+    dailyRewards: 'RECOMPENSAS DIÁRIAS',
+    claimReward: 'RESGATAR RECOMPENSA',
+    claimedToday: 'RESGATADO HOJE',
+    shopTitle: 'LOJA DE SKINS & PALETAS',
+    achievementsTitle: 'COFRE DE CONQUISTAS',
+    equipSkin: 'EQUIPAR',
+    equipped: 'EQUIPADA',
+    buyShards: 'COMPRAR',
+    unlockAd: 'DESBLOQUEAR C/ VÍDEO',
+    scoreMultiplier: 'MULTIPLICADOR PERMANENTE'
   }
 };
 

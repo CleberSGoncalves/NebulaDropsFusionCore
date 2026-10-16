@@ -1,12 +1,17 @@
-[gd_scene load_steps=6 format=3 uid="uid://main_scene_01"]
+[gd_scene load_steps=8 format=3 uid="uid://main_scene_01"]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player_scn"]
 [ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="2_hud_scn"]
 [ext_resource type="Script" path="res://scripts/JuiceCamera2D.gd" id="3_juice_cam"]
 [ext_resource type="Script" path="res://scripts/HitStopManager.gd" id="4_hit_stop"]
+[ext_resource type="Script" path="res://scripts/grid.gd" id="5_grid_script"]
+[ext_resource type="Script" path="res://scripts/modes/time_attack.gd" id="6_time_attack"]
 
 [sub_resource type="GDScript" id="GDScript_main"]
 script/source = "extends Node2D
+
+@onready var grid_node: Node2D = $FusionGrid
+@onready var time_attack_node: Node = $TimeAttackMode
 
 func _ready() -> void:
 	if GameManager:
@@ -28,6 +33,12 @@ color = Color(0.03, 0.05, 0.11, 1)
 
 [node name="HitStopManager" type="Node" parent="."]
 script = ExtResource("4_hit_stop")
+
+[node name="FusionGrid" type="Node2D" parent="."]
+script = ExtResource("5_grid_script")
+
+[node name="TimeAttackMode" type="Node" parent="."]
+script = ExtResource("6_time_attack")
 
 [node name="Player" parent="." instance=ExtResource("1_player_scn")]
 position = Vector2(640, 110)

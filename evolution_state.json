@@ -1,0 +1,408 @@
+{
+  "project": "NebulaDropsFusionCore",
+  "genre": "puzzle",
+  "engine": "Godot 4.7.2",
+  "created_at": 1792121913.6030488,
+  "updated_at": 1792123939,
+  "items": [
+    {
+      "id": "graviton_shift_mechanic",
+      "category": "mechanics",
+      "category_label": "Nova Mecânica",
+      "icon": "⚛️",
+      "badge_color": "cyan",
+      "title": "Graviton Shift: Manipulação de Campo",
+      "description": "Introduzir uma habilidade ativa que permite ao jogador criar temporariamente uma \"bolha\" de manipulação gravitacional em uma área específica do tabuleiro. Dentro desta bolha, as gotas podem ser atraídas para um ponto central, repelidas, ou ter sua direção de queda alterada (ex: para cima, lateralmente) por 3-5 segundos. Isso abre novas soluções para puzzles existentes e permite a criação de fases com desafios de tempo e posicionamento avançados. Implementação no Godot 4 envolveria um Area2D com um script que aplica forças customizadas a corpos RigidBody2D ou CharacterBody2D (as gotas) que entram em sua área, usando _physics_process e apply_central_force ou linear_velocity modificações. O jogador ativaria com um clique/toque e arrastaria para posicionar a bolha.",
+      "target_files": [
+        "scripts/player_abilities.gd",
+        "scenes/effects/graviton_bubble.tscn",
+        "scripts/drop_physics.gd",
+        "ui/hud_ability_button.tscn"
+      ],
+      "difficulty": "Médio",
+      "impact": "⭐️⭐️⭐️⭐️⭐️ +25% de retenção de jogadores devido à profundidade estratégica e novas possibilidades de puzzle.",
+      "status": "ready",
+      "is_new": true,
+      "created_at": 1792122250.991942,
+      "implemented_at": null
+    },
+    {
+      "id": "cosmic_crucible_zones",
+      "category": "maps",
+      "category_label": "Novos Mapas & Temas",
+      "icon": "🌌",
+      "badge_color": "purple",
+      "title": "Zonas do Crisol Cósmico: Ambientes Dinâmicos",
+      "description": "Expandir o jogo com pacotes de fases temáticas, cada um introduzindo um novo ambiente visual e uma \"regra\" ambiental sutil que afeta a jogabilidade. Exemplo: \"Nebulosa Congelada\" (gotas deslizam mais, demoram a fundir), \"Campo de Asteroide Instável\" (pequenos asteroides ocasionalmente caem, destruindo gotas ou criando obstáculos temporários), \"Vórtice de Plasma\" (correntes de ar empurram gotas lateralmente). Cada zona teria seu próprio conjunto de backgrounds, efeitos de partículas, trilha sonora e, possivelmente, novos tipos de obstáculos estáticos. No Godot 4, isso significa criar novas TileMap's ou ParallaxBackground's, novos shaders para os drops e o ambiente, e scripts de Area2D ou CollisionShape2D para as interações ambientais específicas de cada zona.",
+      "target_files": [
+        "scenes/levels/zone_frozen_nebula.tscn",
+        "shaders/ice_shader.gdshader",
+        "scripts/environment_effects.gd",
+        "assets/audio/music_zone_2.ogg"
+      ],
+      "difficulty": "Médio",
+      "impact": "⭐️⭐️⭐️⭐️⭐️ +30% de re-engajamento e exploração de conteúdo, atraindo jogadores por novidade visual e mecânica.",
+      "status": "ready",
+      "is_new": true,
+      "created_at": 1792122250.991942,
+      "implemented_at": null
+    },
+    {
+      "id": "quantum_survival_mode",
+      "category": "modes",
+      "category_label": "Novo Modo de Jogo",
+      "icon": "⏱️",
+      "badge_color": "emerald",
+      "title": "Modo Sobrevivência Quântica: Desafio Infinito",
+      "description": "Um novo modo de jogo \"endless\" onde o objetivo é sobreviver o maior tempo possível. As gotas caem continuamente, e o jogo se torna progressivamente mais difícil: a velocidade de queda aumenta, a variedade de gotas e obstáculos se expande, e novos perigos ambientais surgem. O jogador tem um \"medidor de integridade do núcleo\" que diminui se gotas não forem fundidas ou se o tabuleiro encher demais. Recompensas e posições em um leaderboard global seriam baseadas na pontuação de tempo/fusões. No Godot 4, isso exigiria um novo script de gerenciamento de jogo (game_mode_survival.gd) que controla a geração procedural de gotas e obstáculos, um sistema de pontuação e um timer. A integração com um sistema de leaderboard (ex: CrazyGames API) seria crucial.",
+      "target_files": [
+        "scenes/game_modes/survival_mode.tscn",
+        "scripts/game_mode_survival.gd",
+        "ui/leaderboard_display.tscn",
+        "scripts/crazygames_api_integration.gd"
+      ],
+      "difficulty": "Médio",
+      "impact": "⭐️⭐️⭐️⭐️⭐️ +40% de tempo de jogo por sessão e aumento significativo de acessos diários devido à natureza competitiva e replayability.",
+      "status": "ready",
+      "is_new": true,
+      "created_at": 1792122250.991942,
+      "implemented_at": null
+    },
+    {
+      "id": "starfall_syndicate_contracts",
+      "category": "rewards",
+      "category_label": "Meta-Game",
+      "icon": "💰",
+      "badge_color": "blue",
+      "title": "Contratos do Sindicato Estelar: Missões e Recompensas",
+      "description": "Implementar um sistema de missões diárias e semanais que oferece \"Stardust\" (uma nova moeda premium) e experiência para um \"Battle Pass\" sazonal. As missões podem incluir: \"Funda 50 gotas de tipo X\", \"Complete 3 fases sem usar habilidades\", \"Alcance a pontuação Y no Modo Sobrevivência\". O Stardust pode ser usado para comprar cosméticos (novas skins para gotas, efeitos de fusão, avatares) ou power-ups temporários na loja. O Battle Pass teria tiers com recompensas gratuitas e premium. No Godot 4, isso requer um sistema de gerenciamento de missões (quest_manager.gd), um inventário de jogador (player_data.gd), uma loja (shop_ui.tscn) e um sistema de progressão de Battle Pass (battle_pass.gd). A persistência de dados (salvamento local ou via CrazyGames API) é fundamental.",
+      "target_files": [
+        "scripts/quest_manager.gd",
+        "data/player_inventory.json",
+        "ui/daily_quests_panel.tscn",
+        "ui/shop_panel.tscn",
+        "scripts/save_load_manager.gd"
+      ],
+      "difficulty": "Alto",
+      "impact": "⭐️⭐️⭐️⭐️⭐️ +35% de retenção a longo prazo, aumento de monetização via Battle Pass e compras de Stardust, e um forte incentivo para o login diário.",
+      "status": "ready",
+      "is_new": true,
+      "created_at": 1792122250.991942,
+      "implemented_at": null
+    },
+    {
+      "id": "ai_mode_endless_overdrive_1792122206",
+      "category": "modes",
+      "category_label": "Novo Modo de Jogo",
+      "icon": "⚡",
+      "badge_color": "purple",
+      "title": "Modo Overdrive: Velocidade Dupla & Desafio Contínuo",
+      "description": "Modo especial desbloqueável onde a velocidade do jogo é acelerada em 1.5x e as recompensas de moedas triplicam. Ranking local de maior pontuação.",
+      "target_files": [
+        "scripts/game_manager.gd",
+        "scripts/hud.gd",
+        "scenes/main.tscn"
+      ],
+      "difficulty": "Médio",
+      "impact": "🔥 +35% tempo de jogo para streamers e jogadores de reflexo rápido.",
+      "status": "implemented",
+      "is_new": true,
+      "created_at": 1792122206.5286427,
+      "implemented_at": 1792123646.4288814,
+      "updated_at": 1792122445.686312
+    },
+    {
+      "id": "ai_biome_cyber_void_1792122206",
+      "category": "maps",
+      "category_label": "Novos Mapas & Temas",
+      "icon": "🌌",
+      "badge_color": "cyan",
+      "title": "Novo Cenário: Cyber Void com Efeito Glitch",
+      "description": "Cenário com visual synthwave, grade de piso iluminada e shader de distorção de onda nos momentos de clímax e vitória.",
+      "target_files": [
+        "scenes/maps/cyber_void.tscn",
+        "assets/shaders/glitch.gdshader"
+      ],
+      "difficulty": "Médio",
+      "impact": "✨ Dá ar premium ao jogo e chama atenção imediata nas thumbnails do CrazyGames.",
+      "status": "implemented",
+      "is_new": true,
+      "created_at": 1792122206.5286427,
+      "implemented_at": 1792123646.4288814,
+      "updated_at": 1792122445.686312
+    },
+    {
+      "id": "ai_meta_progression_vault_1792122206",
+      "category": "rewards",
+      "category_label": "Meta-Game & Recompensas",
+      "icon": "💎",
+      "badge_color": "emerald",
+      "title": "Cofre de Conquistas & Multiplicador Permanente",
+      "description": "Sistema de 10 desafios (ex: 'Sobreviva 5 min sem tomar dano', 'Faça 10 combos') que concedem medalhas permanentes e multiplicador de score passivo.",
+      "target_files": [
+        "scripts/achievements_manager.gd",
+        "scenes/achievements_modal.tscn"
+      ],
+      "difficulty": "Médio",
+      "impact": "⭐️⭐️⭐️⭐️⭐️ Constrói meta-game de longo prazo e aumenta a retenção D7.",
+      "status": "implemented",
+      "is_new": true,
+      "created_at": 1792122206.5286427,
+      "implemented_at": 1792123646.4288814,
+      "updated_at": 1792122445.686312
+    },
+    {
+      "id": "ai_difficulty_scaling_1792122206",
+      "category": "balance",
+      "category_label": "Balanceamento & Dificuldade",
+      "icon": "⚖️",
+      "badge_color": "amber",
+      "title": "Balanceamento Inteligente com Alívio de Tensão",
+      "description": "Algoritmo que mede a performance do jogador: em momentos de estresse alto, reduz a cadência dos inimigos por 3 segundos para criar sensação de alívio e superação.",
+      "target_files": [
+        "scripts/ai_director.gd",
+        "scripts/game_manager.gd"
+      ],
+      "difficulty": "Baixo",
+      "impact": "📈 Transforma partidas frustrantes em momentos heróicos de virada.",
+      "status": "ready",
+      "is_new": true,
+      "created_at": 1792122206.5286427,
+      "implemented_at": null
+    },
+    {
+      "id": "ai_mode_endless_overdrive_1792122021",
+      "category": "modes",
+      "category_label": "Novo Modo de Jogo",
+      "icon": "⚡",
+      "badge_color": "purple",
+      "title": "Modo Overdrive: Velocidade Dupla & Desafio Contínuo",
+      "description": "Modo especial desbloqueável onde a velocidade do jogo é acelerada em 1.5x e as recompensas de moedas triplicam. Ranking local de maior pontuação.",
+      "target_files": [
+        "scripts/game_manager.gd",
+        "scripts/hud.gd",
+        "scenes/main.tscn"
+      ],
+      "difficulty": "Médio",
+      "impact": "🔥 +35% tempo de jogo para streamers e jogadores de reflexo rápido.",
+      "status": "implemented",
+      "is_new": true,
+      "created_at": 1792122021.5600922,
+      "implemented_at": 1792123646.4288814,
+      "updated_at": 1792122445.686312
+    },
+    {
+      "id": "ai_biome_cyber_void_1792122021",
+      "category": "maps",
+      "category_label": "Novos Mapas & Temas",
+      "icon": "🌌",
+      "badge_color": "cyan",
+      "title": "Novo Cenário: Cyber Void com Efeito Glitch",
+      "description": "Cenário com visual synthwave, grade de piso iluminada e shader de distorção de onda nos momentos de clímax e vitória.",
+      "target_files": [
+        "scenes/maps/cyber_void.tscn",
+        "assets/shaders/glitch.gdshader"
+      ],
+      "difficulty": "Médio",
+      "impact": "✨ Dá ar premium ao jogo e chama atenção imediata nas thumbnails do CrazyGames.",
+      "status": "implemented",
+      "is_new": true,
+      "created_at": 1792122021.5600922,
+      "implemented_at": 1792123646.4288814,
+      "updated_at": 1792122445.686312
+    },
+    {
+      "id": "ai_meta_progression_vault_1792122021",
+      "category": "rewards",
+      "category_label": "Meta-Game & Recompensas",
+      "icon": "💎",
+      "badge_color": "emerald",
+      "title": "Cofre de Conquistas & Multiplicador Permanente",
+      "description": "Sistema de 10 desafios (ex: 'Sobreviva 5 min sem tomar dano', 'Faça 10 combos') que concedem medalhas permanentes e multiplicador de score passivo.",
+      "target_files": [
+        "scripts/achievements_manager.gd",
+        "scenes/achievements_modal.tscn"
+      ],
+      "difficulty": "Médio",
+      "impact": "⭐️⭐️⭐️⭐️⭐️ Constrói meta-game de longo prazo e aumenta a retenção D7.",
+      "status": "implemented",
+      "is_new": true,
+      "created_at": 1792122021.5600922,
+      "implemented_at": 1792123646.4288814,
+      "updated_at": 1792122445.686312
+    },
+    {
+      "id": "ai_difficulty_scaling_1792122021",
+      "category": "balance",
+      "category_label": "Balanceamento & Dificuldade",
+      "icon": "⚖️",
+      "badge_color": "amber",
+      "title": "Balanceamento Inteligente com Alívio de Tensão",
+      "description": "Algoritmo que mede a performance do jogador: em momentos de estresse alto, reduz a cadência dos inimigos por 3 segundos para criar sensação de alívio e superação.",
+      "target_files": [
+        "scripts/ai_director.gd",
+        "scripts/game_manager.gd"
+      ],
+      "difficulty": "Baixo",
+      "impact": "📈 Transforma partidas frustrantes em momentos heróicos de virada.",
+      "status": "ready",
+      "is_new": true,
+      "created_at": 1792122021.5600922,
+      "implemented_at": null
+    },
+    {
+      "id": "combo_cascade_mechanic",
+      "category": "mechanics",
+      "category_label": "Nova Mecânica",
+      "icon": "💥",
+      "badge_color": "purple",
+      "title": "Cascata de Combos com Efeito Multiplicador",
+      "description": "Fusões ou limpezas simultâneas geram efeito de cascata com multiplicador x2, x3, x5 e screen shake com escala musical pentatônica ascendente.",
+      "target_files": [
+        "scripts/grid.gd",
+        "scripts/game_manager.gd",
+        "src/game.js"
+      ],
+      "difficulty": "Médio",
+      "impact": "⭐️⭐️⭐️⭐️⭐️ Dispara dopamina no jogador a cada jogada bem planejada.",
+      "status": "implemented",
+      "implemented_at": 1792123646.4288814,
+      "is_new": false,
+      "updated_at": 1792122445.686312
+    },
+    {
+      "id": "time_attack_mode",
+      "category": "modes",
+      "category_label": "Novo Modo de Jogo",
+      "icon": "⏱️",
+      "badge_color": "amber",
+      "title": "Modo Time Attack (Corrida Contra o Relógio)",
+      "description": "Modo frenético de 90 segundos onde cada combinação adiciona +3 segundos extras ao cronômetro. Placar de recorde instantâneo.",
+      "target_files": [
+        "scripts/modes/time_attack.gd",
+        "scripts/hud.gd"
+      ],
+      "difficulty": "Baixo",
+      "impact": "🔥 Modo perfeito para sessões rápidas no celular.",
+      "status": "implemented",
+      "implemented_at": 1792123646.4288814,
+      "is_new": false,
+      "updated_at": 1792122445.686312
+    },
+    {
+      "id": "theme_zen_crystal",
+      "category": "maps",
+      "category_label": "Novos Mapas & Temas",
+      "icon": "💎",
+      "badge_color": "cyan",
+      "title": "Novo Tema: Cristais Zen Cósmicos",
+      "description": "Adiciona paleta alternativa com peças translúcidas de cristal prismático, fundo espacial relaxante com partículas estelares e trilha lo-fi suave.",
+      "target_files": [
+        "assets/themes/zen_crystal/",
+        "scripts/theme_manager.gd"
+      ],
+      "difficulty": "Baixo",
+      "impact": "✨ Aumenta o tempo de retenção em jogadores que preferem jogos relaxantes.",
+      "status": "implemented",
+      "implemented_at": 1792123646.4288814,
+      "is_new": false,
+      "updated_at": 1792122445.686312
+    },
+    {
+      "id": "puzzle_20_levels",
+      "category": "levels",
+      "category_label": "Novas Fases & Progressão",
+      "icon": "🧩",
+      "badge_color": "emerald",
+      "title": "Pacote de 20 Níveis Feitos à Mão",
+      "description": "Gera 20 fases com objetivos progressivos: desde introduzir blocos de gelo até quebra-cabeças com obstáculos magnéticos e bombas de tempo.",
+      "target_files": [
+        "data/levels.json",
+        "scripts/level_loader.gd",
+        "src/levels.js"
+      ],
+      "difficulty": "Médio",
+      "impact": "⭐️⭐️⭐️⭐️⭐️ Garante longevidade ao jogo, impedindo que pareça uma demo curta.",
+      "status": "implemented",
+      "implemented_at": 1792123646.4288814,
+      "is_new": false,
+      "updated_at": 1792122445.686312
+    },
+    {
+      "id": "undo_hammer_powerup",
+      "category": "mechanics",
+      "category_label": "Nova Mecânica & Power-ups",
+      "icon": "🔨",
+      "badge_color": "rose",
+      "title": "Power-ups Táticos: Martelo & Desfazer",
+      "description": "Adiciona botões no rodapé para quebrar 1 peça indesejada (Martelo) ou desfazer o último movimento. Recarrega assistindo Rewarded Ad.",
+      "target_files": [
+        "scripts/powerups.gd",
+        "scripts/hud.gd"
+      ],
+      "difficulty": "Baixo",
+      "impact": "💰 Multiplica a conversão de anúncios recompensados no CrazyGames.",
+      "status": "implemented",
+      "implemented_at": 1792123646.4288814,
+      "is_new": false,
+      "updated_at": 1792122445.686312
+    },
+    {
+      "id": "daily_rewards_calendar",
+      "category": "rewards",
+      "category_label": "Meta-Game & Recompensas",
+      "icon": "🎁",
+      "badge_color": "emerald",
+      "title": "Recompensa Diária de Login (7 Dias)",
+      "description": "Modal animado no início com calendário de 7 dias de prêmios crescentes (moedas, skins, multiplicadores), salvo no user://save.json.",
+      "target_files": [
+        "scripts/daily_rewards.gd",
+        "scenes/daily_rewards.tscn"
+      ],
+      "difficulty": "Médio",
+      "impact": "⭐️⭐️⭐️⭐️⭐️ Aumenta a retenção D1 e D7 (jogadores voltam todo dia para coletar).",
+      "status": "implemented",
+      "implemented_at": 1792123646.4288814,
+      "is_new": false,
+      "updated_at": 1792122445.686312
+    },
+    {
+      "id": "haptic_and_sound_polish",
+      "category": "polish",
+      "category_label": "Polimento de Áudio & Vibração",
+      "icon": "🔊",
+      "badge_color": "teal",
+      "title": "Sons Sintetizados Procedurais & Vibração Háptica",
+      "description": "Implementa AudioStreamPlayer com escala pentatônica harmônica para cliques e vitórias, e vibração háptica no celular (navigator.vibrate).",
+      "target_files": [
+        "scripts/sound_manager.gd",
+        "src/sound.js"
+      ],
+      "difficulty": "Baixo",
+      "impact": "✨ Dá sensação de produto acabado e comercial de alto nível.",
+      "status": "implemented",
+      "implemented_at": 1792123646.4288814,
+      "is_new": false,
+      "updated_at": 1792122445.686312
+    },
+    {
+      "id": "cosmetic_skins_shop",
+      "category": "shop",
+      "category_label": "Loja de Cosméticos & Skins",
+      "icon": "🎨",
+      "badge_color": "purple",
+      "title": "Loja de Skins com Desbloqueio por Moedas ou Anúncio",
+      "description": "Menu de loja com 6 visuais/paletas desbloqueáveis usando moedas conquistadas ou instantaneamente com um Rewarded Ad da CrazyGames.",
+      "target_files": [
+        "scenes/shop.tscn",
+        "scripts/shop.gd"
+      ],
+      "difficulty": "Médio",
+      "impact": "💰 Converte moedas virtuais em engajamento e cliques em anúncios recompensados.",
+      "status": "implemented",
+      "implemented_at": 1792123646.4288814,
+      "is_new": false,
+      "updated_at": 1792122445.686312
+    }
+  ]
+}

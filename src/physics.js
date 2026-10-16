@@ -430,6 +430,17 @@ export class PhysicsWorld {
     return toRemove.length;
   }
 
+  removeOrb(orb) {
+    const idx = this.orbs.indexOf(orb);
+    if (idx !== -1) {
+      this.spawnFusionParticles(orb.x, orb.y, orb.color, orb.tier);
+      this.orbs.splice(idx, 1);
+      this.cameraShaker.addTrauma(0.3);
+      return true;
+    }
+    return false;
+  }
+
   clearTopOverflowOrbs() {
     const thresholdY = this.bounds.dangerY + 90;
     const kept = [];

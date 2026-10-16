@@ -6,7 +6,7 @@ class_name LevelSelect
 
 signal fase_selecionada(level_index: int)
 
-const TOTAL_FASES: int = 12
+const TOTAL_FASES: int = 20
 
 @export var grid_path: NodePath = NodePath("MarginContainer/ScrollContainer/GridContainer")
 var _grid: GridContainer = null

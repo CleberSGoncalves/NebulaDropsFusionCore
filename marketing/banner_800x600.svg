@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <linearGradient id="b800" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#090d16"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#b800)"/>
+  <circle cx="400" cy="240" r="110" fill="#f43f5e" stroke="#ffffff" stroke-width="6"/>
+  <circle cx="370" cy="225" r="15" fill="#ffffff"/>
+  <circle cx="430" cy="225" r="15" fill="#ffffff"/>
+  <polygon points="400,90 412,125 450,125 420,150 432,185 400,160 368,185 380,150 350,125 388,125" fill="#fbbf24"/>
+  <text x="400" y="440" font-family="system-ui, sans-serif" font-size="44" font-weight="900" fill="#ffffff" text-anchor="middle">
+    Nebuladropsfusioncore
+  </text>
+  <text x="400" y="490" font-family="system-ui, sans-serif" font-size="20" font-weight="700" fill="#38bdf8" text-anchor="middle" letter-spacing="2">
+    ★ 100% WEB &amp; TOUCH COMPATIBLE ★
+  </text>
+</svg>

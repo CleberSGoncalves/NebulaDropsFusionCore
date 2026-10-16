@@ -13,12 +13,16 @@ signal danger_level_changed(danger_ratio: float)
 signal player_died()
 signal level_completed(level_index: int)
 signal checkpoint_reached(checkpoint_id: int)
+signal combo_cascade_triggered(level: int, mult: float)
 
 # ── UI e Menus ────────────────────────────────────────────────────
 signal hud_show_message(text: String, duration: float)
 signal pause_requested()
 signal resume_requested()
 signal level_select_requested()
+signal theme_changed(theme_name: String)
+signal skin_changed(skin_id: String)
+signal powerup_used(type: String)
 
 # ── Áudio ─────────────────────────────────────────────────────────
 signal play_sfx(sfx_name: String)
@@ -41,7 +45,8 @@ func limpar_conexoes_ativas() -> void:
 		next_orb_updated, danger_level_changed, player_died,
 		level_completed, checkpoint_reached, hud_show_message,
 		camera_shake_requested, hit_stop_requested,
-		stars_earned, haptic_requested, pacing_adjusted
+		stars_earned, haptic_requested, pacing_adjusted,
+		theme_changed, skin_changed, powerup_used
 	]
 	for sig in sinais:
 		for conn in sig.get_connections():

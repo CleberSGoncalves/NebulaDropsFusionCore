@@ -13,6 +13,9 @@ import { sound } from './audio.js';
 import { storage } from './storage.js';
 import { ORB_TIERS, SECTORS } from './levels.js';
 import { crazyGames } from './crazygames.js';
+import { dailyRewards } from './daily_rewards.js';
+import { shopManager, SKINS_DEF } from './shop.js';
+import { achievements, ACHIEVEMENTS_DEF } from './achievements.js';
 
 export class GameHUD {
   constructor(stageElement, callbacks = {}) {
@@ -22,6 +25,9 @@ export class GameHUD {
     this.pulseUses = 2;
     this.ventUses = 2;
     this.catalystUses = 1;
+    this.hammerUses = storage.data.hammerCount !== undefined ? storage.data.hammerCount : 2;
+    this.undoUses = storage.data.undoCount !== undefined ? storage.data.undoCount : 2;
+    this.currentGameMode = 'normal';
     this.doubleClaimed = false;
     this.lastStatus = null;
 
@@ -76,6 +82,46 @@ export class GameHUD {
     const btnCluster = document.createElement('div');
     btnCluster.className = 'hud-btn-cluster';
 
+    this.btnMode = document.createElement('button');
+    this.btnMode.className = 'hud-mode-btn';
+    this.btnMode.title = 'Switch Mode';
+    this.btnMode.textContent = i18n.t('modeNormal');
+    this.btnMode.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      const modes = ['normal', 'overdrive', 'time_attack'];
+      const nextIdx = (modes.indexOf(this.currentGameMode) + 1) % modes.length;
+      this.currentGameMode = modes[nextIdx];
+      this._updateModeBtnText();
+      if (this.callbacks.onSetGameMode) this.callbacks.onSetGameMode(this.currentGameMode);
+    });
+
+    this.btnDaily = document.createElement('button');
+    this.btnDaily.className = 'hud-icon-btn hud-btn-amber';
+    this.btnDaily.title = 'Daily Login Rewards';
+    this.btnDaily.textContent = '🎁';
+    this.btnDaily.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      this.openDailyRewardsModal();
+    });
+
+    this.btnShop = document.createElement('button');
+    this.btnShop.className = 'hud-icon-btn hud-btn-purple';
+    this.btnShop.title = 'Cosmetic Skins Shop';
+    this.btnShop.textContent = '🎨';
+    this.btnShop.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      this.openShopModal();
+    });
+
+    this.btnAchievements = document.createElement('button');
+    this.btnAchievements.className = 'hud-icon-btn hud-btn-emerald';
+    this.btnAchievements.title = 'Achievements Vault';
+    this.btnAchievements.textContent = '🏆';
+    this.btnAchievements.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      this.openAchievementsModal();
+    });
+
     this.btnEvo = document.createElement('button');
     this.btnEvo.className = 'hud-icon-btn hud-btn-accent';
     this.btnEvo.title = 'Evolution & Star Guide';
@@ -120,6 +166,10 @@ export class GameHUD {
       this.openPauseModal();
     });
 
+    btnCluster.appendChild(this.btnMode);
+    btnCluster.appendChild(this.btnDaily);
+    btnCluster.appendChild(this.btnShop);
+    btnCluster.appendChild(this.btnAchievements);
     btnCluster.appendChild(this.btnEvo);
     btnCluster.appendChild(this.btnLevels);
     btnCluster.appendChild(this.btnLang);
@@ -255,9 +305,27 @@ export class GameHUD {
       if (this.callbacks.onTriggerCatalyst) this.callbacks.onTriggerCatalyst();
     });
 
+    this.btnHammer = document.createElement('button');
+    this.btnHammer.id = 'btn-tactical-hammer';
+    this.btnHammer.className = 'hud-action-btn hud-btn-rose';
+    this.btnHammer.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      if (this.callbacks.onTriggerHammer) this.callbacks.onTriggerHammer();
+    });
+
+    this.btnUndo = document.createElement('button');
+    this.btnUndo.id = 'btn-tactical-undo';
+    this.btnUndo.className = 'hud-action-btn hud-btn-teal';
+    this.btnUndo.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      if (this.callbacks.onTriggerUndo) this.callbacks.onTriggerUndo();
+    });
+
     this.bottomBar.appendChild(this.btnPulse);
     this.bottomBar.appendChild(this.btnVent);
     this.bottomBar.appendChild(this.btnCatalyst);
+    this.bottomBar.appendChild(this.btnHammer);
+    this.bottomBar.appendChild(this.btnUndo);
 
     // Assemble 3-Row Flex Hierarchy inside #game-stage
     this.stage.innerHTML = '';
@@ -272,7 +340,21 @@ export class GameHUD {
     this.modalBackdrop.addEventListener('pointerdown', (e) => e.stopPropagation());
     document.body.appendChild(this.modalBackdrop);
 
-    this.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses);
+    this.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses);
+  }
+
+  _updateModeBtnText() {
+    if (!this.btnMode) return;
+    if (this.currentGameMode === 'overdrive') {
+      this.btnMode.textContent = i18n.t('modeOverdrive');
+      this.btnMode.className = 'hud-mode-btn hud-mode-overdrive';
+    } else if (this.currentGameMode === 'time_attack') {
+      this.btnMode.textContent = i18n.t('modeTimeAttack');
+      this.btnMode.className = 'hud-mode-btn hud-mode-timeattack';
+    } else {
+      this.btnMode.textContent = i18n.t('modeNormal');
+      this.btnMode.className = 'hud-mode-btn';
+    }
   }
 
   refreshTexts() {
@@ -280,7 +362,8 @@ export class GameHUD {
     this.targetLabel.textContent = i18n.t('targetTier') + ':';
     this.btnEvo.textContent = i18n.t('btnEvoGuide');
     this.btnLang.textContent = i18n.lang.toUpperCase();
-    this.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses);
+    this._updateModeBtnText();
+    this.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses);
     if (this.lastStatus) {
       this.updateStatus(this.lastStatus);
     }
@@ -358,10 +441,12 @@ export class GameHUD {
     this.targetSymbol.textContent = `${targetCfg.symbol} (T${targetCfg.tier})`;
   }
 
-  updateTacticalButtons(pulseCount, ventCount, catalystCount) {
+  updateTacticalButtons(pulseCount, ventCount, catalystCount, hammerCount = 2, undoCount = 2) {
     this.pulseUses = pulseCount;
     this.ventUses = ventCount;
     this.catalystUses = catalystCount;
+    this.hammerUses = hammerCount;
+    this.undoUses = undoCount;
 
     this.btnPulse.textContent = `⚡ ${i18n.t('btnPulse')} (${pulseCount})`;
     this.btnPulse.disabled = pulseCount <= 0;
@@ -371,6 +456,12 @@ export class GameHUD {
 
     this.btnCatalyst.textContent = `★ ${i18n.t('btnCatalyst')} (${catalystCount})`;
     this.btnCatalyst.disabled = catalystCount <= 0;
+
+    const hammerLabel = hammerCount > 0 ? `(${hammerCount})` : `[+2 Ad]`;
+    this.btnHammer.textContent = `🔨 ${i18n.t('hammer')} ${hammerLabel}`;
+
+    const undoLabel = undoCount > 0 ? `(${undoCount})` : `[+2 Ad]`;
+    this.btnUndo.textContent = `↩️ ${i18n.t('undo')} ${undoLabel}`;
   }
 
   setDangerVisible(visible, isShielded = false, secondsLeft = 5.0) {
@@ -803,5 +894,322 @@ export class GameHUD {
       onClick();
     });
     return btn;
+  }
+
+  openDailyRewardsModal() {
+    if (this.callbacks.onPause) this.callbacks.onPause();
+    crazyGames.gameplayStop();
+
+    this.modalBackdrop.innerHTML = '';
+    this.modalBackdrop.className = 'hud-modal-backdrop';
+
+    const card = document.createElement('div');
+    card.className = 'hud-modal-card hud-modal-wide';
+
+    const header = document.createElement('div');
+    header.className = 'hud-modal-header';
+
+    const title = document.createElement('h2');
+    title.className = 'hud-modal-title';
+    title.textContent = `🎁 ${i18n.t('dailyRewards')}`;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'hud-icon-btn';
+    closeBtn.textContent = 'X';
+    closeBtn.addEventListener('pointerdown', () => {
+      this.closeModal();
+      if (this.callbacks.onResume) this.callbacks.onResume();
+    });
+
+    header.appendChild(title);
+    header.appendChild(closeBtn);
+    card.appendChild(header);
+
+    const isPt = i18n.lang === 'pt';
+    const sub = document.createElement('p');
+    sub.className = 'hud-modal-sub';
+    sub.textContent = isPt
+      ? `Faça login diário para receber prêmios crescentes de Shards, Power-ups e Skins exclusivas!`
+      : `Log in every day to claim escalating Plasma Shards, Power-ups, and exclusive Skins!`;
+    card.appendChild(sub);
+
+    const daysState = dailyRewards.getCalendarState();
+    const grid = document.createElement('div');
+    grid.className = 'hud-daily-grid';
+
+    daysState.forEach((d) => {
+      const dayCard = document.createElement('div');
+      dayCard.className = `hud-daily-card ${d.status}`;
+
+      const dTitle = document.createElement('div');
+      dTitle.className = 'hud-daily-day';
+      dTitle.textContent = isPt ? d.title : d.titleEn;
+
+      const dIcon = document.createElement('div');
+      dIcon.className = 'hud-daily-icon';
+      dIcon.textContent = d.bonus === 'skin_zen_crystal' ? '💎' : d.bonus.startsWith('hammer') ? '🔨' : d.bonus.startsWith('undo') ? '↩️' : '♦';
+
+      const dReward = document.createElement('div');
+      dReward.className = 'hud-daily-reward';
+      dReward.textContent = d.reward;
+
+      const dBadge = document.createElement('div');
+      dBadge.className = 'hud-daily-badge';
+      if (d.status === 'claimed' || d.status === 'claimed_today') {
+        dBadge.textContent = '✓ ' + (isPt ? 'COLETADO' : 'CLAIMED');
+      } else if (d.status === 'available') {
+        dBadge.textContent = '★ ' + (isPt ? 'DISPONÍVEL' : 'AVAILABLE');
+      } else {
+        dBadge.textContent = '🔒 ' + (isPt ? 'BLOQUEADO' : 'LOCKED');
+      }
+
+      dayCard.appendChild(dTitle);
+      dayCard.appendChild(dIcon);
+      dayCard.appendChild(dReward);
+      dayCard.appendChild(dBadge);
+      grid.appendChild(dayCard);
+    });
+
+    card.appendChild(grid);
+
+    if (dailyRewards.canClaim) {
+      const claimBtn = this._createModalBtn(`🎁 ${i18n.t('claimReward')} ➔`, 'gold', () => {
+        const reward = dailyRewards.claimToday();
+        if (reward) {
+          sound.playVictory();
+          this.hammerUses = storage.data.hammerCount || 2;
+          this.undoUses = storage.data.undoCount || 2;
+          this.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses);
+          this.openDailyRewardsModal();
+        }
+      });
+      card.appendChild(claimBtn);
+    } else {
+      const waitNotice = document.createElement('div');
+      waitNotice.className = 'hud-daily-notice';
+      waitNotice.textContent = isPt
+        ? '✓ Você já resgatou a recompensa de hoje! Volte amanhã para o próximo dia.'
+        : "✓ You have already claimed today's reward! Return tomorrow for the next day.";
+      card.appendChild(waitNotice);
+    }
+
+    this.modalBackdrop.appendChild(card);
+  }
+
+  openShopModal() {
+    if (this.callbacks.onPause) this.callbacks.onPause();
+    crazyGames.gameplayStop();
+
+    this.modalBackdrop.innerHTML = '';
+    this.modalBackdrop.className = 'hud-modal-backdrop';
+
+    const card = document.createElement('div');
+    card.className = 'hud-modal-card hud-modal-wide';
+
+    const header = document.createElement('div');
+    header.className = 'hud-modal-header';
+
+    const title = document.createElement('h2');
+    title.className = 'hud-modal-title';
+    title.textContent = `🎨 ${i18n.t('shopTitle')}`;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'hud-icon-btn';
+    closeBtn.textContent = 'X';
+    closeBtn.addEventListener('pointerdown', () => {
+      this.closeModal();
+      if (this.callbacks.onResume) this.callbacks.onResume();
+    });
+
+    header.appendChild(title);
+    header.appendChild(closeBtn);
+    card.appendChild(header);
+
+    const isPt = i18n.lang === 'pt';
+    const shardsCount = storage.data.plasmaShards || 0;
+    const shardsHeader = document.createElement('div');
+    shardsHeader.className = 'hud-shop-balance';
+    shardsHeader.textContent = `♦ ${isPt ? 'PLASMA SHARDS DISPONÍVEIS' : 'AVAILABLE PLASMA SHARDS'}: ${shardsCount}`;
+    card.appendChild(shardsHeader);
+
+    const scrollWrap = document.createElement('div');
+    scrollWrap.className = 'hud-level-scroll';
+
+    const grid = document.createElement('div');
+    grid.className = 'hud-shop-grid';
+
+    SKINS_DEF.forEach((s) => {
+      const isEquipped = shopManager.getEquippedSkinId() === s.id;
+      const isUnlocked = shopManager.isUnlocked(s.id);
+
+      const skinCard = document.createElement('div');
+      skinCard.className = `hud-shop-card ${isEquipped ? 'equipped' : ''}`;
+
+      const swatch = document.createElement('div');
+      swatch.className = 'hud-shop-swatch';
+      swatch.style.background = `linear-gradient(135deg, ${s.accent}, #020617)`;
+      swatch.style.boxShadow = `0 0 12px ${s.accent}88`;
+
+      const info = document.createElement('div');
+      info.className = 'hud-shop-info';
+
+      const name = document.createElement('div');
+      name.className = 'hud-shop-name';
+      name.textContent = isPt ? s.namePt : s.nameEn;
+
+      const desc = document.createElement('div');
+      desc.className = 'hud-shop-desc';
+      desc.textContent = isPt ? s.descPt : s.descEn;
+
+      info.appendChild(name);
+      info.appendChild(desc);
+
+      const actionArea = document.createElement('div');
+      actionArea.className = 'hud-shop-actions';
+
+      if (isEquipped) {
+        const eqBadge = document.createElement('span');
+        eqBadge.className = 'hud-shop-equipped-badge';
+        eqBadge.textContent = isPt ? '✓ EQUIPADA' : '✓ EQUIPPED';
+        actionArea.appendChild(eqBadge);
+      } else if (isUnlocked) {
+        const btnEquip = document.createElement('button');
+        btnEquip.className = 'hud-shop-btn hud-shop-btn-equip';
+        btnEquip.textContent = i18n.t('equipSkin');
+        btnEquip.addEventListener('pointerdown', (e) => {
+          e.stopPropagation();
+          shopManager.equip(s.id);
+          this.openShopModal();
+        });
+        actionArea.appendChild(btnEquip);
+      } else {
+        const btnBuy = document.createElement('button');
+        btnBuy.className = 'hud-shop-btn hud-shop-btn-buy';
+        btnBuy.textContent = `♦ ${s.cost} ${i18n.t('buyShards')}`;
+        btnBuy.addEventListener('pointerdown', (e) => {
+          e.stopPropagation();
+          const res = shopManager.buyWithShards(s.id);
+          if (res.success) {
+            sound.playVictory();
+            this.openShopModal();
+          } else {
+            alert(isPt ? `Shards insuficientes! Faltam ${res.needed} shards.` : `Not enough shards! Need ${res.needed} more.`);
+          }
+        });
+
+        const btnAd = document.createElement('button');
+        btnAd.className = 'hud-shop-btn hud-shop-btn-ad';
+        btnAd.textContent = `[🎬] ${i18n.t('unlockAd')}`;
+        btnAd.addEventListener('pointerdown', async (e) => {
+          e.stopPropagation();
+          const ok = await shopManager.unlockWithAd(s.id);
+          if (ok) {
+            sound.playVictory();
+            this.openShopModal();
+          }
+        });
+
+        actionArea.appendChild(btnBuy);
+        actionArea.appendChild(btnAd);
+      }
+
+      skinCard.appendChild(swatch);
+      skinCard.appendChild(info);
+      skinCard.appendChild(actionArea);
+      grid.appendChild(skinCard);
+    });
+
+    scrollWrap.appendChild(grid);
+    card.appendChild(scrollWrap);
+    this.modalBackdrop.appendChild(card);
+  }
+
+  openAchievementsModal() {
+    if (this.callbacks.onPause) this.callbacks.onPause();
+    crazyGames.gameplayStop();
+
+    this.modalBackdrop.innerHTML = '';
+    this.modalBackdrop.className = 'hud-modal-backdrop';
+
+    const card = document.createElement('div');
+    card.className = 'hud-modal-card hud-modal-wide';
+
+    const header = document.createElement('div');
+    header.className = 'hud-modal-header';
+
+    const title = document.createElement('h2');
+    title.className = 'hud-modal-title';
+    title.textContent = `🏆 ${i18n.t('achievementsTitle')}`;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'hud-icon-btn';
+    closeBtn.textContent = 'X';
+    closeBtn.addEventListener('pointerdown', () => {
+      this.closeModal();
+      if (this.callbacks.onResume) this.callbacks.onResume();
+    });
+
+    header.appendChild(title);
+    header.appendChild(closeBtn);
+    card.appendChild(header);
+
+    const isPt = i18n.lang === 'pt';
+    const multPct = Math.round((achievements.getPermanentMultiplier() - 1.0) * 100);
+
+    const multBanner = document.createElement('div');
+    multBanner.className = 'hud-achievements-banner';
+    multBanner.textContent = isPt
+      ? `⚡ MULTIPLICADOR PASSIVO ATIVO: +${multPct}% DE PONTOS EM TODAS AS FUSÕES!`
+      : `⚡ PASSIVE MULTIPLIER ACTIVE: +${multPct}% SCORE BONUS ON ALL FUSIONS!`;
+    card.appendChild(multBanner);
+
+    const scrollWrap = document.createElement('div');
+    scrollWrap.className = 'hud-level-scroll';
+
+    const list = document.createElement('div');
+    list.className = 'hud-achievements-list';
+
+    ACHIEVEMENTS_DEF.forEach((a) => {
+      const isDone = achievements.isUnlocked(a.id);
+
+      const aRow = document.createElement('div');
+      aRow.className = `hud-achievement-row ${isDone ? 'unlocked' : ''}`;
+
+      const aIcon = document.createElement('div');
+      aIcon.className = 'hud-achievement-icon';
+      aIcon.textContent = a.icon;
+
+      const aDetails = document.createElement('div');
+      aDetails.className = 'hud-achievement-details';
+
+      const aTitle = document.createElement('div');
+      aTitle.className = 'hud-achievement-title';
+      aTitle.textContent = isPt ? a.titlePt : a.titleEn;
+
+      const aDesc = document.createElement('div');
+      aDesc.className = 'hud-achievement-desc';
+      aDesc.textContent = isPt ? a.descPt : a.descEn;
+
+      aDetails.appendChild(aTitle);
+      aDetails.appendChild(aDesc);
+
+      const aReward = document.createElement('div');
+      aReward.className = 'hud-achievement-reward';
+      aReward.textContent = `+${Math.round(a.multiplierBonus * 100)}% Mult`;
+
+      const aStatus = document.createElement('div');
+      aStatus.className = `hud-achievement-status ${isDone ? 'done' : 'locked'}`;
+      aStatus.textContent = isDone ? (isPt ? '✓ CONQUISTADO' : '✓ UNLOCKED') : (isPt ? 'BLOQUEADO' : 'LOCKED');
+
+      aRow.appendChild(aIcon);
+      aRow.appendChild(aDetails);
+      aRow.appendChild(aReward);
+      aRow.appendChild(aStatus);
+      list.appendChild(aRow);
+    });
+
+    scrollWrap.appendChild(list);
+    card.appendChild(scrollWrap);
+    this.modalBackdrop.appendChild(card);
   }
 }

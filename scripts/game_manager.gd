@@ -1,36 +1,47 @@
 extends Node
 
-## GameManager — Gerenciador Central de Estado, Fusão e CrazyGames SDK v3 (Godot 4.7.2)
+## GameManager — Gerenciador Central de Estado, Modos e CrazyGames SDK v3 (Godot 4.7.2)
 
 signal score_changed(new_score: int)
 signal health_changed(new_health: int)
 signal game_over
 signal game_started
+signal mode_changed(mode_name: String)
 
-const TOTAL_FASES: int = 12
+const TOTAL_FASES: int = 20
 
+enum GameMode {
+	NORMAL,
+	OVERDRIVE,
+	TIME_ATTACK
+}
+
+var current_mode: GameMode = GameMode.NORMAL
 var score: int = 0
 var high_score: int = 0
+var overdrive_best: int = 0
+var time_attack_best: int = 0
 var health: int = 100
 var max_health: int = 100
 var current_level: int = 1
 var max_unlocked_level: int = 1
 var is_game_active: bool = false
 var revive_used_this_attempt: bool = false
+var game_speed_mult: float = 1.0
 
 # Tabela dos 11 níveis de núcleos de plasma (Nebula Drops)
 const ORB_TIERS: Array[Dictionary] = [
-	{"tier": 1, "name": "Micro Plasma Spark", "radius": 22.0, "points": 10, "color": "#00f5ff"},
-	{"tier": 2, "name": "Helium Ion Core", "radius": 30.0, "points": 25, "color": "#38bdf8"},
-	{"tier": 3, "name": "Aurora Flux Drop", "radius": 38.0, "points": 60, "color": "#22c55e"},
-	{"tier": 4, "name": "Solar Flare Pearl", "radius": 46.0, "points": 140, "color": "#eab308"},
-	{"tier": 5, "name": "Tachyon Pulse Sphere", "radius": 56.0, "points": 300, "color": "#f97316"},
-	{"tier": 6, "name": "Nova Blaze Core", "radius": 66.0, "points": 650, "color": "#ef4444"},
-	{"tier": 7, "name": "Quantum Void Drop", "radius": 78.0, "points": 1400, "color": "#a855f7"},
+	{"tier": 1, "name": "Micro Plasma Spark", "radius": 22.0, "points": 15, "color": "#00f5ff"},
+	{"tier": 2, "name": "Helium Ion Core", "radius": 30.0, "points": 35, "color": "#38bdf8"},
+	{"tier": 3, "name": "Aurora Flux Drop", "radius": 38.0, "points": 80, "color": "#22c55e"},
+	{"tier": 4, "name": "Solar Flare Pearl", "radius": 46.0, "points": 180, "color": "#eab308"},
+	{"tier": 5, "name": "Tachyon Pulse Sphere", "radius": 56.0, "points": 380, "color": "#f97316"},
+	{"tier": 6, "name": "Nova Blaze Core", "radius": 66.0, "points": 750, "color": "#ef4444"},
+	{"tier": 7, "name": "Quantum Void Drop", "radius": 78.0, "points": 1500, "color": "#a855f7"},
 	{"tier": 8, "name": "Antimatter Singularity", "radius": 92.0, "points": 3000, "color": "#ec4899"},
-	{"tier": 9, "name": "Dark Energy Matrix", "radius": 108.0, "points": 6500, "color": "#6366f1"},
-	{"tier": 10, "name": "Pulsar Radiant Engine", "radius": 126.0, "points": 15000, "color": "#14b8a6"},
-	{"tier": 11, "name": "Nebula Fusion Core", "radius": 145.0, "points": 40000, "color": "#facc15"}
+	{"tier": 9, "name": "Dark Energy Matrix", "radius": 108.0, "points": 6000, "color": "#6366f1"},
+	{"tier": 10, "name": "Pulsar Radiant Engine", "radius": 126.0, "points": 12000, "color": "#14b8a6"},
+	{"tier": 11, "name": "Nebula Fusion Core", "radius": 145.0, "points": 28000, "color": "#facc15"}
 ]
 
 func _ready() -> void:
@@ -39,13 +50,27 @@ func _ready() -> void:
 		var prog: Dictionary = SaveSystem.obter_progresso()
 		high_score = int(prog.get("high_score", 0))
 		max_unlocked_level = int(prog.get("max_level", 1))
+		overdrive_best = int(prog.get("overdrive_best", 0))
+		time_attack_best = int(prog.get("time_attack_best", 0))
 
-func start_new_game(level_idx: int = 1) -> void:
+func start_new_game(level_idx: int = 1, mode: GameMode = GameMode.NORMAL) -> void:
+	current_mode = mode
 	current_level = clampi(level_idx, 1, TOTAL_FASES)
 	score = 0
 	health = max_health
 	is_game_active = true
 	revive_used_this_attempt = false
+	
+	if current_mode == GameMode.OVERDRIVE:
+		game_speed_mult = 1.5
+		mode_changed.emit("OVERDRIVE (1.5x VELOCIDADE)")
+	elif current_mode == GameMode.TIME_ATTACK:
+		game_speed_mult = 1.0
+		mode_changed.emit("TIME ATTACK (90s)")
+	else:
+		game_speed_mult = 1.0
+		mode_changed.emit("NORMAL")
+	
 	score_changed.emit(score)
 	health_changed.emit(health)
 	game_started.emit()
@@ -54,12 +79,36 @@ func start_new_game(level_idx: int = 1) -> void:
 		EventBus.health_updated.emit(health, max_health)
 	_cg_gameplay_start()
 
-func add_score(points: int) -> void:
+func add_score(base_points: int) -> void:
 	if not is_game_active:
 		return
-	score += points
-	if score > high_score:
+	
+	# Multiplicador passivo permanente de Conquistas
+	var perm_mult: float = 1.0
+	var ach = get_node_or_null("/root/AchievementsManager")
+	if ach:
+		perm_mult = ach.get_total_multiplier()
+	
+	var final_points: int = int(float(base_points) * perm_mult)
+	score += final_points
+	
+	if current_mode == GameMode.NORMAL and score > high_score:
 		high_score = score
+	elif current_mode == GameMode.OVERDRIVE and score > overdrive_best:
+		overdrive_best = score
+		if SaveSystem:
+			var prog: Dictionary = SaveSystem.carregar()
+			prog["overdrive_best"] = overdrive_best
+			SaveSystem.salvar(prog)
+		if overdrive_best >= 2000 and ach:
+			ach.unlock("overdrive_survivor")
+	elif current_mode == GameMode.TIME_ATTACK and score > time_attack_best:
+		time_attack_best = score
+		if SaveSystem:
+			var prog: Dictionary = SaveSystem.carregar()
+			prog["time_attack_best"] = time_attack_best
+			SaveSystem.salvar(prog)
+	
 	score_changed.emit(score)
 	if EventBus:
 		EventBus.score_updated.emit(score)
@@ -70,12 +119,14 @@ func register_fusion(new_tier: int, merge_pos: Vector2) -> void:
 	var tier_idx: int = clampi(new_tier - 1, 0, ORB_TIERS.size() - 1)
 	var pts: int = int(ORB_TIERS[tier_idx]["points"])
 	add_score(pts)
+	
 	if EventBus:
 		EventBus.orbs_merged.emit(new_tier, merge_pos, pts)
 		var trauma_val: float = clampf(0.15 + float(new_tier) * 0.06, 0.15, 0.85)
 		EventBus.camera_shake_requested.emit(trauma_val)
 		if new_tier >= 5:
 			EventBus.hit_stop_requested.emit(0.055, 0.05)
+	
 	if new_tier >= 8:
 		_cg_happy_time()
 
@@ -103,12 +154,22 @@ func complete_current_level(stars: int = 3) -> void:
 	is_game_active = false
 	_cg_gameplay_stop()
 	_cg_happy_time()
+	
 	if current_level >= max_unlocked_level and current_level < TOTAL_FASES:
 		max_unlocked_level = current_level + 1
+	
+	var shard_multiplier: int = 3 if current_mode == GameMode.OVERDRIVE else 1
+	var shard_bonus: int = 30 * stars * shard_multiplier
+	
 	if SaveSystem:
 		var star_dict: Dictionary = {}
 		star_dict["stars_level_" + str(current_level)] = clampi(stars, 1, 3)
+		var prog: Dictionary = SaveSystem.carregar()
+		var current_shards: int = int(prog.get("plasma_shards", 0)) + shard_bonus
+		prog["plasma_shards"] = current_shards
+		SaveSystem.salvar(prog)
 		SaveSystem.salvar_progresso(max_unlocked_level, high_score, AudioServer.is_bus_mute(0), star_dict)
+	
 	if EventBus:
 		EventBus.stars_earned.emit(current_level, stars)
 		EventBus.level_completed.emit(current_level)

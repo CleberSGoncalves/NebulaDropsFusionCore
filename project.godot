@@ -17,6 +17,12 @@ config/icon="res://icon.svg"
 GameManager="*res://scripts/game_manager.gd"
 EventBus="*res://scripts/event_bus.gd"
 SaveSystem="*res://scripts/save_system.gd"
+AchievementsManager="*res://scripts/achievements_manager.gd"
+PowerupsManager="*res://scripts/powerups.gd"
+DailyRewards="*res://scripts/daily_rewards.gd"
+ShopManager="*res://scripts/shop.gd"
+ThemeManager="*res://scripts/theme_manager.gd"
+SoundManager="*res://scripts/sound_manager.gd"
 
 [display]
 

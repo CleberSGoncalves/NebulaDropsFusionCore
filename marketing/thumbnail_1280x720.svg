@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="thumbBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#020617"/>
+      <stop offset="40%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <radialGradient id="portalGlow" cx="75%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#thumbBg)"/>
+  <rect width="1280" height="720" fill="url(#portalGlow)"/>
+  <!-- Elementos de Partículas -->
+  <circle cx="950" cy="360" r="180" fill="none" stroke="#38bdf8" stroke-width="12" stroke-dasharray="24 16" opacity="0.6"/>
+  <circle cx="950" cy="360" r="120" fill="#00f5ff" opacity="0.2"/>
+  <circle cx="950" cy="360" r="65" fill="#f43f5e" stroke="#ffffff" stroke-width="6"/>
+  <circle cx="930" cy="350" r="10" fill="#ffffff"/>
+  <circle cx="970" cy="350" r="10" fill="#ffffff"/>
+  <!-- Texto e Tipografia -->
+  <rect x="80" y="240" width="560" height="8" rx="4" fill="#38bdf8"/>
+  <text x="80" y="340" font-family="system-ui, sans-serif" font-size="76" font-weight="900" fill="#ffffff" letter-spacing="-1">
+    Nebuladropsfusioncore
+  </text>
+  <text x="84" y="405" font-family="system-ui, sans-serif" font-size="28" font-weight="700" fill="#38bdf8" letter-spacing="4">
+    CRAZYGAMES &amp; MOBILE EDITION
+  </text>
+  <rect x="80" y="460" width="260" height="64" rx="16" fill="#10b981"/>
+  <text x="210" y="502" font-family="system-ui, sans-serif" font-size="24" font-weight="800" fill="#ffffff" text-anchor="middle">
+    PLAY FREE NOW
+  </text>
+</svg>

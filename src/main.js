@@ -71,6 +71,15 @@ window.addEventListener('DOMContentLoaded', async () => {
     onTriggerCatalyst: () => {
       if (engine) engine.useCatalyst();
     },
+    onTriggerHammer: () => {
+      if (engine) engine.useHammer();
+    },
+    onTriggerUndo: () => {
+      if (engine) engine.useUndo();
+    },
+    onSetGameMode: (mode) => {
+      if (engine) engine.setGameMode(mode);
+    },
     onRevive: () => {
       if (engine) engine.reviveWithEmergencyShield();
     }

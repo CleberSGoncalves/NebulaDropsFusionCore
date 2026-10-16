@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://hud_scene_01"]
+[gd_scene load_steps=5 format=3 uid="uid://hud_scene_01"]
 
 [ext_resource type="Script" path="res://scripts/hud.gd" id="1_hud"]
+[ext_resource type="PackedScene" path="res://scenes/achievements_modal.tscn" id="2_ach_modal"]
+[ext_resource type="PackedScene" path="res://scenes/daily_rewards.tscn" id="3_daily_modal"]
+[ext_resource type="PackedScene" path="res://scenes/shop.tscn" id="4_shop_modal"]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
@@ -8,14 +11,15 @@ script = ExtResource("1_hud")
 [node name="MarginContainer" type="MarginContainer" parent="."]
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 80.0
+offset_bottom = 120.0
 grow_horizontal = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 24
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
+theme_override_constants/separation = 6
 
 [node name="TopRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -23,23 +27,60 @@ layout_mode = 2
 [node name="ScoreLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 22
-text = "Pontuação: 0"
+theme_override_font_sizes/font_size = 20
+text = "PONTOS: 0"
+
+[node name="ModeLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.98, 0.8, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "[ NORMAL ]"
+horizontal_alignment = 1
+
+[node name="DailyButton" type="Button" parent="MarginContainer/VBoxContainer/TopRow"]
+custom_minimum_size = Vector2(70, 32)
+layout_mode = 2
+text = "DIÁRIO"
+
+[node name="ShopButton" type="Button" parent="MarginContainer/VBoxContainer/TopRow"]
+custom_minimum_size = Vector2(60, 32)
+layout_mode = 2
+text = "LOJA"
+
+[node name="AchButton" type="Button" parent="MarginContainer/VBoxContainer/TopRow"]
+custom_minimum_size = Vector2(80, 32)
+layout_mode = 2
+text = "CONQUISTAS"
 
 [node name="MuteButton" type="Button" parent="MarginContainer/VBoxContainer/TopRow"]
-custom_minimum_size = Vector2(40, 32)
+custom_minimum_size = Vector2(36, 32)
 layout_mode = 2
 text = "[>]"
 
 [node name="PauseButton" type="Button" parent="MarginContainer/VBoxContainer/TopRow"]
-custom_minimum_size = Vector2(40, 32)
+custom_minimum_size = Vector2(36, 32)
 layout_mode = 2
 text = "II"
 
 [node name="HealthBar" type="ProgressBar" parent="MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(220, 22)
+custom_minimum_size = Vector2(220, 16)
 layout_mode = 2
 value = 100.0
+
+[node name="BottomPowerups" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="HammerButton" type="Button" parent="MarginContainer/VBoxContainer/BottomPowerups"]
+custom_minimum_size = Vector2(120, 32)
+layout_mode = 2
+text = "MARTELO (2)"
+
+[node name="UndoButton" type="Button" parent="MarginContainer/VBoxContainer/BottomPowerups"]
+custom_minimum_size = Vector2(120, 32)
+layout_mode = 2
+text = "DESFAZER (2)"
 
 [node name="GameOverPanel" type="Panel" parent="."]
 process_mode = 3
@@ -121,7 +162,21 @@ grow_horizontal = 2
 grow_vertical = 0
 text = "Continuar Partida"
 
+[node name="AchievementsModal" parent="." instance=ExtResource("2_ach_modal")]
+visible = false
+
+[node name="DailyRewardsModal" parent="." instance=ExtResource("3_daily_modal")]
+visible = false
+
+[node name="ShopModal" parent="." instance=ExtResource("4_shop_modal")]
+visible = false
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/TopRow/DailyButton" to="." method="_on_daily_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/TopRow/ShopButton" to="." method="_on_shop_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/TopRow/AchButton" to="." method="_on_achievements_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/TopRow/MuteButton" to="." method="_on_mute_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/TopRow/PauseButton" to="." method="_on_pause_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/BottomPowerups/HammerButton" to="." method="_on_hammer_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/BottomPowerups/UndoButton" to="." method="_on_undo_pressed"]
 [connection signal="pressed" from="GameOverPanel/RestartButton" to="." method="_on_restart_button_pressed"]
 [connection signal="pressed" from="PausePanel/ResumeButton" to="." method="_on_resume_button_pressed"]

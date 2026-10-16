@@ -1,0 +1,63 @@
+[gd_scene load_steps=4 format=3 uid="uid://cyber_void_map_01"]
+
+[ext_resource type="Shader" path="res://assets/shaders/glitch.gdshader" id="1_glitch_shd"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glitch"]
+shader = ExtResource("1_glitch_shd")
+shader_parameter/glitch_intensity = 0.0
+shader_parameter/wave_intensity = 0.0
+shader_parameter/time_speed = 2.0
+
+[sub_resource type="GDScript" id="GDScript_cyber_void"]
+script/source = "extends Node2D
+
+@onready var glitch_rect: ColorRect = $GlitchOverlay
+var mat: ShaderMaterial
+
+func _ready() -> void:
+	if glitch_rect and glitch_rect.material is ShaderMaterial:
+		mat = glitch_rect.material as ShaderMaterial
+	if EventBus:
+		if EventBus.has_signal(\"orbs_merged\"):
+			EventBus.orbs_merged.connect(_on_orbs_merged)
+		if EventBus.has_signal(\"level_completed\"):
+			EventBus.level_completed.connect(_on_level_completed)
+
+func trigger_glitch(intensity: float = 0.5, duration: float = 0.35) -> void:
+	if not mat:
+		return
+	var tw: Tween = create_tween()
+	tw.tween_property(mat, \"shader_parameter/glitch_intensity\", intensity, 0.05)
+	tw.tween_property(mat, \"shader_parameter/wave_intensity\", intensity * 0.8, 0.05)
+	tw.tween_interval(duration * 0.4)
+	tw.tween_property(mat, \"shader_parameter/glitch_intensity\", 0.0, duration * 0.6)
+	tw.tween_property(mat, \"shader_parameter/wave_intensity\", 0.0, duration * 0.6)
+
+func _on_orbs_merged(new_tier: int, _pos: Vector2, _pts: int) -> void:
+	if new_tier >= 6:
+		trigger_glitch(clampf(float(new_tier) * 0.08, 0.2, 0.85), 0.3)
+
+func _on_level_completed(_level: int) -> void:
+	trigger_glitch(0.7, 0.6)
+"
+
+[node name="CyberVoid" type="Node2D"]
+script = SubResource("GDScript_cyber_void")
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.06, 0.015, 0.14, 1)
+
+[node name="NeonGrid" type="ColorRect" parent="."]
+offset_top = 450.0
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.9, 0.15, 0.75, 0.12)
+
+[node name="GlitchOverlay" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_glitch")
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.001)
