@@ -508,6 +508,8 @@ export class CinematicIntro {
     if (this.wrapper && this.wrapper.parentNode) {
       this.wrapper.parentNode.removeChild(this.wrapper);
     }
+    sound._ensureContext();
+    sound.startAmbientMusic();
     if (typeof this.onComplete === 'function') {
       this.onComplete();
     }

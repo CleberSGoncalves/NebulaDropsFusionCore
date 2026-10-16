@@ -103,7 +103,16 @@ window.addEventListener('DOMContentLoaded', async () => {
   engine = new GameEngine(canvas, hud);
   window.__nebulaEngine = engine; // Expose for automated QA inspection
 
-  // 5. Launch FluidCleb Interactive Intro (0.0s - 2.8s) + Lore with 1-Click Skip
+  // 5. Global audio unlocker: starts ambient music on the very first touch/click/key
+  const unlockAudio = () => {
+    sound._ensureContext();
+    sound.startAmbientMusic();
+  };
+  window.addEventListener('pointerdown', unlockAudio, { passive: true, once: true });
+  window.addEventListener('keydown', unlockAudio, { passive: true, once: true });
+  window.addEventListener('click', unlockAudio, { passive: true, once: true });
+
+  // 6. Launch FluidCleb Interactive Intro (0.0s - 2.8s) + Lore with 1-Click Skip
   const intro = new CinematicIntro(document.body, () => {
     console.log('[Main] Intro completed or skipped -> Entering Reactor Gameplay!');
     engine.start();

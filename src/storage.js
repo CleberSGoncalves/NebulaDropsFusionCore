@@ -91,7 +91,7 @@ class StorageManager {
           overdriveBest: Math.max(0, Number(parsed.overdriveBest) || 0),
           timeAttackBest: Math.max(0, Number(parsed.timeAttackBest) || 0),
           plasmaShards: Math.max(0, Number(parsed.plasmaShards) || 0),
-          muted: Boolean(parsed.muted),
+          muted: false, // Guaranteed unmuted on game launch so music and sfx play immediately
           stars: typeof parsed.stars === 'object' && parsed.stars ? parsed.stars : {},
           bestScores: typeof parsed.bestScores === 'object' && parsed.bestScores ? parsed.bestScores : {},
           achievements: typeof parsed.achievements === 'object' && parsed.achievements ? parsed.achievements : {},

@@ -413,6 +413,8 @@ export class GameEngine {
 
     this.hud.setDangerVisible(false, false, 5.0);
     this.hud.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses);
+    sound.setTheme(sec.theme || 'default');
+    sound.startAmbientMusic();
     this._syncHUD();
     crazyGames.gameplayStart();
   }

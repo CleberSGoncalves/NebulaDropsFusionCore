@@ -151,11 +151,13 @@ export class GameHUD {
 
     this.btnMute = document.createElement('button');
     this.btnMute.className = 'hud-icon-btn';
-    this.btnMute.textContent = sound.isMuted ? '[X]' : '[>]';
+    this.btnMute.title = sound.isMuted ? 'Unmute Audio' : 'Mute Audio';
+    this.btnMute.textContent = sound.isMuted ? '🔇' : '🔊';
     this.btnMute.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
       const muted = sound.toggleMute();
-      this.btnMute.textContent = muted ? '[X]' : '[>]';
+      this.btnMute.textContent = muted ? '🔇' : '🔊';
+      this.btnMute.title = muted ? 'Unmute Audio' : 'Mute Audio';
     });
 
     this.btnPause = document.createElement('button');
@@ -362,6 +364,8 @@ export class GameHUD {
     this.targetLabel.textContent = i18n.t('targetTier') + ':';
     this.btnEvo.textContent = i18n.t('btnEvoGuide');
     this.btnLang.textContent = i18n.lang.toUpperCase();
+    this.btnMute.textContent = sound.isMuted ? '🔇' : '🔊';
+    this.btnMute.title = sound.isMuted ? 'Unmute Audio' : 'Mute Audio';
     this._updateModeBtnText();
     this.updateTacticalButtons(this.pulseUses, this.ventUses, this.catalystUses, this.hammerUses, this.undoUses);
     if (this.lastStatus) {
